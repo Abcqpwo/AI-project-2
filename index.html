@@ -412,6 +412,20 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
   border-color: var(--ink);
 }
 
+.btn-wide {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.btn-wide[hidden] { display: none; }
+
+.btn-ghost b {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
 .btn-lg {
   padding: 14px 20px;
   font-size: 13.5px;
@@ -619,7 +633,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
       <div class="board-card">
         <div class="board-head">
           <span class="board-title">第 01 路段 · 双向单车道</span>
-          <span class="board-status"><i class="dot"></i><span id="hudStatus">待开始</span></span>
+          <span class="board-status"><i class="dot"></i><span id="hudStatus" role="status" aria-live="polite">待开始</span></span>
         </div>
         <div class="board-wrap">
           <canvas id="board" width="960" height="576" aria-label="寻塔之光棋盘"></canvas>
@@ -645,7 +659,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
               <div class="screen-inner">
                 <p class="eyebrow">暂停 / 现场保持</p>
                 <h2 class="screen-title">已暂停</h2>
-                <p class="screen-lead">画面停在当前一帧，塔位和预算都还在。按 ESC 可以直接退出回标题。</p>
+                <p class="screen-lead">画面停在当前一帧，塔位和预算都还在。按 ESC 或右侧「继续」按钮回到路面，再按 ESC 直接退出回标题。</p>
                 <div class="btn-row">
                   <button class="btn-solid" id="btnResume">继续处置</button>
                   <button class="btn-ghost" id="btnRestartPause">重开本局</button>
@@ -697,7 +711,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
       <aside class="panel">
         <section class="panel-block">
           <h2>架设 <span class="hint">按数字键切换</span></h2>
-          <button class="tower-card is-on" data-type="1" id="cardT1">
+          <button class="tower-card is-on" data-type="1" id="cardT1" aria-pressed="true">
             <span class="tc-key">1</span>
             <span class="tc-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24">
@@ -715,7 +729,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
             </span>
             <span class="tc-cost"><b>60</b><span>预算</span></span>
           </button>
-          <button class="tower-card" data-type="2" id="cardT2">
+          <button class="tower-card" data-type="2" id="cardT2" aria-pressed="false">
             <span class="tc-key">2</span>
             <span class="tc-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24">
@@ -741,6 +755,8 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
             <div><label>本波剩余</label><b id="hudRemain">0</b></div>
           </div>
           <button class="btn-solid" id="btnWave">立即开波</button>
+          <button class="btn-ghost btn-wide" id="btnPause" aria-label="暂停或继续本局">暂停</button>
+          <button class="btn-ghost btn-wide" id="btnSell" hidden>拆除选中塔 · 回收 <b id="sellRefund">0</b></button>
         </section>
 
         <section class="panel-block panel-block--quiet">
@@ -749,7 +765,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
             <div><label>最远波次</label><b id="hudBest">第 0 波</b></div>
             <div><label>塔位</label><b id="hudTowers">0</b></div>
           </div>
-          <p class="note">障碍滚到右侧收费站即算漏过，水泥块一次扣 2 点通行。</p>
+          <p class="note">障碍滚到右侧收费站即算漏过，水泥块一次扣 2 点通行。手机端点塔后可用下方「拆除」按钮回收预算，没有键盘时用「暂停」按钮。</p>
         </section>
       </aside>
     </div>
@@ -769,7 +785,8 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
   var START_MONEY = 220;
   var START_LIVES = 15;
   var SELL_RATE = 0.7;
-  var PREP_TIME = 8;
+  var PREP_TIME = 8;        // 波次之间的准备时间
+  var FIRST_PREP = 15;      // 首波准备时间（留给新玩家看清车道）
   var BEST_KEY = 'seek-light-best';
 
   var TOWER_SPECS = {
@@ -860,6 +877,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     lives: START_LIVES,
     cleared: 0,
     clearedWaves: 0,
+    maxWave: 0,
     towers: [],
     enemies: [],
     shots: [],
@@ -869,7 +887,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     selected: 1,
     waveActive: false,
     waveClock: 0,
-    countdown: PREP_TIME,
+    countdown: FIRST_PREP,
     hover: null,
     inspect: null,
     time: 0,
@@ -884,6 +902,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     state.lives = START_LIVES;
     state.cleared = 0;
     state.clearedWaves = 0;
+    state.maxWave = 0;
     state.towers = [];
     state.enemies = [];
     state.shots = [];
@@ -893,7 +912,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     state.selected = 1;
     state.waveActive = false;
     state.waveClock = 0;
-    state.countdown = PREP_TIME;
+    state.countdown = FIRST_PREP;
     state.hover = null;
     state.inspect = null;
     state.time = 0;
@@ -1116,11 +1135,13 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
   function startWave() {
     if (state.mode !== 'playing' || state.waveActive) return;
     state.wave += 1;
+    if (state.wave > state.maxWave) state.maxWave = state.wave;
     state.queue = buildWave(state.wave);
     state.waveClock = 0;
     state.waveActive = true;
     state.countdown = 0;
     toast('第 ' + state.wave + ' 波进场');
+    syncHud();
   }
 
   function spawnEnemy(item) {
@@ -1154,6 +1175,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     }
     state.countdown = PREP_TIME;
     toast('第 ' + state.wave + ' 波清理完成 · 预算 +' + bonus);
+    syncHud();
   }
 
   /* =========================================================
@@ -1224,6 +1246,29 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
   }
 
   /* =========================================================
+     实体回收
+     原地压缩数组，避免每帧 filter 新建数组带来的 GC 抖动
+     ========================================================= */
+
+  function compactDead(list) {
+    var n = 0;
+    for (var i = 0; i < list.length; i++) {
+      var item = list[i];
+      if (!item.dead) list[n++] = item;
+    }
+    list.length = n;
+  }
+
+  function compactAlive(list) {
+    var n = 0;
+    for (var i = 0; i < list.length; i++) {
+      var item = list[i];
+      if (item.life > 0) list[n++] = item;
+    }
+    list.length = n;
+  }
+
+  /* =========================================================
      主循环
      ========================================================= */
 
@@ -1269,7 +1314,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
         toast(e.spec.label + ' 冲出路面 · 通行 -' + e.spec.leak);
       }
     }
-    state.enemies = state.enemies.filter(function (en) { return !en.dead; });
+    compactDead(state.enemies);
 
     if (state.lives <= 0) {
       loseGame();
@@ -1326,7 +1371,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
         s.dead = true;
       }
     }
-    state.shots = state.shots.filter(function (sh) { return !sh.dead; });
+    compactDead(state.shots);
 
     for (var a = 0; a < state.particles.length; a++) {
       var pt = state.particles[a];
@@ -1336,12 +1381,12 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
       pt.vx *= 0.94;
       pt.vy *= 0.94;
     }
-    state.particles = state.particles.filter(function (pt) { return pt.life > 0; });
+    compactAlive(state.particles);
 
     for (var b = 0; b < state.effects.length; b++) {
       state.effects[b].life -= dt;
     }
-    state.effects = state.effects.filter(function (fx) { return fx.life > 0; });
+    compactAlive(state.effects);
 
     if (state.waveActive && state.queue.length === 0 && state.enemies.length === 0) {
       endWave();
@@ -1818,6 +1863,9 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     best: document.getElementById('hudBest'),
     towers: document.getElementById('hudTowers'),
     btnWave: document.getElementById('btnWave'),
+    btnPause: document.getElementById('btnPause'),
+    btnSell: document.getElementById('btnSell'),
+    sellRefund: document.getElementById('sellRefund'),
     cardT1: document.getElementById('cardT1'),
     cardT2: document.getElementById('cardT2')
   };
@@ -1839,8 +1887,9 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     var cd = (state.mode === 'playing' && !state.waveActive)
       ? Math.max(0, state.countdown).toFixed(1) + 's'
       : '—';
+    var inspectKey = state.inspect ? state.inspect.c + ',' + state.inspect.r : '-';
     var sig = [state.wave, state.lives, state.money, state.cleared, status, remain, cd,
-      state.towers.length, state.waveActive, state.mode, state.selected].join('|');
+      state.towers.length, state.waveActive, state.mode, state.selected, inspectKey].join('|');
     if (sig === hudSig) return;
     hudSig = sig;
 
@@ -1857,8 +1906,21 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     el.btnWave.disabled = state.mode !== 'playing' || state.waveActive;
     el.btnWave.textContent = state.waveActive ? '波次进行中' : '立即开波';
 
+    el.btnPause.textContent = state.mode === 'paused' ? '继续（ESC）' : '暂停（ESC）';
+    el.btnPause.disabled = state.mode !== 'playing' && state.mode !== 'paused';
+
+    var held = state.inspect;
+    if (held && state.towers.indexOf(held) !== -1) {
+      el.btnSell.hidden = false;
+      el.sellRefund.textContent = String(Math.round(TOWER_SPECS[held.type].cost * SELL_RATE));
+    } else {
+      el.btnSell.hidden = true;
+    }
+
     el.cardT1.classList.toggle('is-on', state.selected === 1);
     el.cardT2.classList.toggle('is-on', state.selected === 2);
+    el.cardT1.setAttribute('aria-pressed', state.selected === 1 ? 'true' : 'false');
+    el.cardT2.setAttribute('aria-pressed', state.selected === 2 ? 'true' : 'false');
   }
 
   /* =========================================================
@@ -1928,6 +1990,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     if (state.mode !== 'paused') return;
     state.mode = 'playing';
     showScreen(null);
+    syncHud();
     startLoop();
   }
 
@@ -1943,9 +2006,9 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
   function loseGame() {
     stopLoop();
     state.mode = 'lose';
-    recordBest(state.clearedWaves);
+    recordBest(state.maxWave);
     render();
-    document.getElementById('loseWave').textContent = '第 ' + Math.max(1, state.wave) + ' 波';
+    document.getElementById('loseWave').textContent = '第 ' + Math.max(1, state.maxWave) + ' 波';
     document.getElementById('loseCleared').textContent = String(state.cleared);
     document.getElementById('loseBest').textContent = bestLabel(readBest());
     setBestTexts();
@@ -1956,6 +2019,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     stopLoop();
     state.mode = 'win';
     state.clearedWaves = TOTAL_WAVES;
+    state.maxWave = TOTAL_WAVES;
     recordBest(TOTAL_WAVES);
     render();
     document.getElementById('winCleared').textContent = String(state.cleared);
@@ -2004,11 +2068,13 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     var cell = cellFromEvent(ev);
     state.hover = cell;
     state.inspect = cell ? towerAt(cell.c, cell.r) : null;
+    syncHud();
   });
 
   canvas.addEventListener('pointerleave', function () {
     state.hover = null;
     state.inspect = null;
+    syncHud();
   });
 
   canvas.addEventListener('pointerdown', function (ev) {
@@ -2020,9 +2086,12 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
       var existing = towerAt(cell.c, cell.r);
       if (existing) {
         state.inspect = existing;
+        toast('已选中塔位 · 面板下方可拆除');
       } else {
+        state.inspect = null;
         tryBuild(cell.c, cell.r);
       }
+      syncHud();
       drawCurrentFrame();
       return;
     }
@@ -2035,6 +2104,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
       } else {
         tryBuild(cell.c, cell.r);
       }
+      syncHud();
       drawCurrentFrame();
     }
   });
@@ -2085,6 +2155,20 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
 
   el.btnWave.addEventListener('click', function () {
     if (state.mode === 'playing' && !state.waveActive) startWave();
+  });
+
+  /* 触屏没有右键，用面板按钮拆除选中的塔 */
+  el.btnSell.addEventListener('click', function () {
+    if (state.mode !== 'playing' || !state.inspect) return;
+    if (state.towers.indexOf(state.inspect) === -1) return;
+    sellTower(state.inspect);
+    drawCurrentFrame();
+  });
+
+  /* 触屏没有 ESC，用面板按钮暂停 / 继续 */
+  el.btnPause.addEventListener('click', function () {
+    if (state.mode === 'playing') pauseGame();
+    else if (state.mode === 'paused') resumeGame();
   });
 
   el.cardT1.addEventListener('click', function () { setSelected(1); });
