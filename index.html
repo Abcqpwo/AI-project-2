@@ -592,7 +592,12 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
   .screen-title { font-size: 30px; }
   .screen-grid { grid-template-columns: 1fr; gap: 8px; }
   .tally { grid-template-columns: 1fr 1fr; }
-  .overlay { padding: 12px; }
+  /* 窄屏上棋盘本身很矮，覆盖层改成铺满整屏，开始 / 结算卡片才不用在小框里滚 */
+  .overlay {
+    position: fixed;
+    z-index: 30;
+    padding: 16px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -765,7 +770,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
             <div><label>最远波次</label><b id="hudBest">第 0 波</b></div>
             <div><label>塔位</label><b id="hudTowers">0</b></div>
           </div>
-          <p class="note">障碍滚到右侧收费站即算漏过，水泥块一次扣 2 点通行。手机端点塔后可用下方「拆除」按钮回收预算，没有键盘时用「暂停」按钮。</p>
+          <p class="note">障碍滚到右侧收费站即算漏过，水泥块一次扣 2 点通行。手机端第一次点空地只是预览，同一格再点一次才架设；点已有的塔后可用下方「拆除」按钮回收预算，没有键盘时用「暂停」按钮。</p>
         </section>
       </aside>
     </div>
@@ -787,6 +792,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
   var SELL_RATE = 0.7;
   var PREP_TIME = 8;        // 波次之间的准备时间
   var FIRST_PREP = 15;      // 首波准备时间（留给新玩家看清车道）
+  var TOUCH_CONFIRM = 2.5;  // 触屏：第一次点空地是预览，同一格再点一次才真正架设
   var BEST_KEY = 'seek-light-best';
 
   var TOWER_SPECS = {
@@ -795,14 +801,15 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
   };
 
   var ENEMY_SPECS = {
-    gravel: { label: '碎石堆', hp: 28, speed: 64, reward: 6, leak: 1, size: 9 },
-    tire: { label: '废轮胎', hp: 74, speed: 50, reward: 10, leak: 1, size: 12 },
-    barrel: { label: '快滚桶', hp: 60, speed: 86, reward: 12, leak: 1, size: 11 },
-    concrete: { label: '水泥块', hp: 180, speed: 34, reward: 18, leak: 2, size: 15 }
+    gravel: { label: '碎石堆', hp: 28, speed: 64, reward: 5, leak: 1, size: 9 },
+    tire: { label: '废轮胎', hp: 74, speed: 50, reward: 8, leak: 1, size: 12 },
+    barrel: { label: '快滚桶', hp: 60, speed: 86, reward: 9, leak: 1, size: 11 },
+    concrete: { label: '水泥块', hp: 180, speed: 34, reward: 14, leak: 2, size: 15 }
   };
 
   var canvas = document.getElementById('board');
-  var ctx = canvas.getContext('2d');
+  /* 底图铺满整块画布，关掉 alpha 可以省掉每帧的透明混合 */
+  var ctx = canvas.getContext('2d', { alpha: false });
   var dpr = Math.min(2, window.devicePixelRatio || 1);
   canvas.width = Math.round(W * dpr);
   canvas.height = Math.round(H * dpr);
@@ -841,14 +848,27 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     return SEGS[SEGS.length - 1];
   }
 
-  function posAt(d) {
-    if (d <= 0) return { x: PATH[0].x, y: PATH[0].y };
+  /* 把坐标写进传入对象，避免每帧给每个障碍新建一个临时对象 */
+  function posInto(d, out) {
+    if (d <= 0) {
+      out.x = PATH[0].x;
+      out.y = PATH[0].y;
+      return out;
+    }
     if (d >= TOTAL_LEN) {
       var last = SEGS[SEGS.length - 1];
-      return { x: last.b.x, y: last.b.y };
+      out.x = last.b.x;
+      out.y = last.b.y;
+      return out;
     }
     var s = segAt(d);
-    return { x: s.a.x + s.dx * (d - s.start), y: s.a.y + s.dy * (d - s.start) };
+    out.x = s.a.x + s.dx * (d - s.start);
+    out.y = s.a.y + s.dy * (d - s.start);
+    return out;
+  }
+
+  function posAt(d) {
+    return posInto(d, { x: 0, y: 0 });
   }
 
   function normalAt(d) {
@@ -890,6 +910,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     countdown: FIRST_PREP,
     hover: null,
     inspect: null,
+    touchT: 0,
     time: 0,
     toastText: '',
     toastT: 0,
@@ -915,6 +936,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     state.countdown = FIRST_PREP;
     state.hover = null;
     state.inspect = null;
+    state.touchT = 0;
     state.time = 0;
     state.toastT = 0;
     state.leakFx = 0;
@@ -1113,7 +1135,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
      ========================================================= */
 
   function buildWave(w) {
-    var hpMul = 1 + (w - 1) * 0.16;
+    var hpMul = 1 + (w - 1) * 0.2;
     var groups = [];
     groups.push({ type: 'gravel', count: 5 + Math.floor(w * 1.3), gap: 0.5 });
     if (w >= 2) groups.push({ type: 'tire', count: 2 + Math.floor(w * 0.7), gap: 0.7 });
@@ -1167,7 +1189,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
   function endWave() {
     state.waveActive = false;
     state.clearedWaves = state.wave;
-    var bonus = 18 + state.wave * 4;
+    var bonus = 14 + state.wave * 3;
     state.money += bonus;
     if (state.wave >= TOTAL_WAVES) {
       winGame();
@@ -1276,6 +1298,10 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     state.time += dt;
     if (state.toastT > 0) state.toastT -= dt;
     if (state.leakFx > 0) state.leakFx -= dt;
+    if (state.touchT && state.time - state.touchT > TOUCH_CONFIRM) {
+      state.touchT = 0;
+      state.hover = null;
+    }
 
     if (!state.waveActive) {
       if (state.countdown > 0) {
@@ -1302,9 +1328,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
         if (e.slowT <= 0) e.slowF = 1;
       }
       e.dist += sp * dt;
-      var p = posAt(e.dist);
-      e.x = p.x;
-      e.y = p.y;
+      posInto(e.dist, e);
       if (e.flash > 0) e.flash -= dt;
       if (e.dist >= TOTAL_LEN) {
         e.dead = true;
@@ -1434,7 +1458,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
 
   function render() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, W, H);
+    /* 底图不透明且铺满全画布，直接覆盖，不需要再 clearRect 一次 */
     ctx.drawImage(bg, 0, 0, W, H);
     drawRange();
     drawGhost();
@@ -1445,7 +1469,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     drawEffects();
     drawLeakFx();
     drawToast();
-    syncHud();
+    syncHudSlow();
   }
 
   function drawRange() {
@@ -1880,6 +1904,15 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
   }
 
   var hudSig = '';
+  var hudAt = 0;
+
+  /* 主循环每帧都会调用它，100ms 节流一次：数值本身也是 0.1 秒的粒度 */
+  function syncHudSlow() {
+    var now = (window.performance && window.performance.now) ? window.performance.now() : Date.now();
+    if (now - hudAt < 100) return;
+    hudAt = now;
+    syncHud();
+  }
 
   function syncHud() {
     var status = statusText();
@@ -2085,13 +2118,29 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     if (ev.pointerType !== 'mouse') {
       var existing = towerAt(cell.c, cell.r);
       if (existing) {
+        state.touchT = 0;
         state.inspect = existing;
         toast('已选中塔位 · 面板下方可拆除');
-      } else {
+        syncHud();
+        drawCurrentFrame();
+        return;
+      }
+      var sameCell = state.hover && state.hover.c === cell.c && state.hover.r === cell.r;
+      var pending = state.touchT && state.time - state.touchT <= TOUCH_CONFIRM;
+      if (sameCell && pending) {
+        /* 同一格再点一次才算确认，避免手指误触直接花掉预算 */
+        state.touchT = 0;
+        state.hover = null;
         state.inspect = null;
         tryBuild(cell.c, cell.r);
+      } else {
+        var spec = TOWER_SPECS[state.selected];
+        state.inspect = null;
+        state.hover = cell;
+        state.touchT = state.time;
+        toast('预览 · 再点一次架设' + spec.label + '（' + spec.cost + ' 预算）');
+        syncHud();
       }
-      syncHud();
       drawCurrentFrame();
       return;
     }
