@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>寻塔之光 · 路边塔防 v1.1.1</title>
-<meta name="description" content="寻塔之光 1.1.1：一条固定车道、十二波障碍、路边架塔的单文件塔防小游戏，原生 HTML + Canvas，无需安装。">
+<title>寻塔之光 · 路边塔防 v1.2</title>
+<meta name="description" content="寻塔之光 1.2：十个关卡的路边塔防小游戏，从教学路段一路打到终局回路，原生 HTML + Canvas，单文件，无需安装。">
 <meta name="theme-color" content="#22262c">
-<meta property="og:title" content="寻塔之光 · 路边塔防 v1.1.1">
-<meta property="og:description" content="把处置塔架在路边，挡住滚落的施工障碍，别让它们撞进收费站。十二波，单文件，打开即玩。">
+<meta property="og:title" content="寻塔之光 · 路边塔防 v1.2">
+<meta property="og:description" content="把处置塔架在路边，挡住滚落的施工障碍。十个关卡，从教学到终局，单文件，打开即玩。">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Crect%20width='24'%20height='24'%20fill='%2322262c'/%3E%3Ccircle%20cx='12'%20cy='10'%20r='5'%20fill='%23e9a338'/%3E%3Cpath%20d='M6%2020h12'%20stroke='%23f1ece0'%20stroke-width='2'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
@@ -488,11 +488,12 @@ canvas#board {
 /* ---------- 覆盖层 ---------- */
 
 .overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
+  z-index: 30;
   display: grid;
   place-items: center;
-  padding: 20px;
+  padding: 24px;
   overflow: auto;
   background: rgba(22, 25, 30, 0.82);
   -webkit-backdrop-filter: blur(3px);
@@ -613,6 +614,104 @@ canvas#board {
 
 .btn-row .btn-solid { width: auto; flex: 1 1 140px; }
 
+/* ---------- 关卡列表 ---------- */
+
+.screen--wide { max-width: 660px; }
+
+.levels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 14px 0 16px;
+  max-height: 320px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.level-card {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 9px;
+  background: var(--paper-2);
+  border: 1px solid rgba(32, 36, 42, 0.26);
+  color: var(--ink);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+
+.level-card:hover:not(:disabled) {
+  background: #f7f2e5;
+  border-color: var(--ink);
+}
+
+.level-card:focus-visible { outline: 2px solid var(--hazard); outline-offset: 2px; }
+
+.level-card.is-locked {
+  cursor: default;
+  opacity: 0.46;
+  filter: grayscale(0.6);
+}
+
+.lv-no {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(32, 36, 42, 0.55);
+}
+
+.lv-body { min-width: 0; }
+
+.lv-body strong {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lv-body em {
+  display: block;
+  font-style: normal;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+
+.lv-right { text-align: right; }
+
+.lv-stars {
+  display: block;
+  font-size: 8.5px;
+  letter-spacing: 1px;
+  color: var(--hazard);
+}
+
+.lv-state {
+  display: block;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  margin-top: 3px;
+}
+
+.screen-grid--keys {
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 14px;
+  padding-top: 12px;
+  margin-bottom: 16px;
+}
+
 /* ---------- 响应式 ---------- */
 
 @media (max-width: 1040px) {
@@ -665,7 +764,7 @@ canvas#board {
         </span>
         <div class="brand-text">
           <h1>寻塔之光</h1>
-          <p>SEEK THE LIGHT · 路边塔防 <span class="ver">v1.1.1</span></p>
+          <p>SEEK THE LIGHT · 路边塔防 <span class="ver">v1.2</span></p>
         </div>
       </div>
       <div class="stats">
@@ -680,28 +779,29 @@ canvas#board {
     <div class="stage">
       <div class="board-card">
         <div class="board-head">
-          <span class="board-title">第 01 路段 · 双向单车道</span>
+          <span class="board-title" id="boardTitle">关卡 01 / 10 · 教学 · 路肩起步</span>
           <span class="board-status"><i class="dot"></i><span id="hudStatus" role="status" aria-live="polite">待开始</span></span>
         </div>
         <div class="board-wrap">
           <canvas id="board" width="960" height="576" aria-label="寻塔之光棋盘" aria-describedby="boardHelp"></canvas>
-          <p class="sr-only" id="boardHelp">固定车道从左侧进场，向右经三次转向到收费站。用左键点路肩空地建塔，右键拆塔；数字键 1、2 切换塔型，R 重开，ESC 暂停。</p>
+          <p class="sr-only" id="boardHelp">车道从左侧进场，折返几段后到右侧收费站。用左键点路肩空地建塔，右键拆塔；数字键 1、2 切换塔型，R 重开，ESC 暂停。</p>
           <p class="sr-only" id="liveToast" role="status" aria-live="polite" aria-atomic="true"></p>
 
           <div class="overlay" id="overlay">
-            <div class="screen is-open" data-screen="title" role="dialog" aria-modal="true" aria-labelledby="titleHeading">
+            <div class="screen screen--wide is-open" data-screen="title" role="dialog" aria-modal="true" aria-labelledby="titleHeading">
               <div class="screen-inner">
-                <p class="eyebrow">路段 01 / 双向单车道 / 待处置</p>
+                <p class="eyebrow" id="titleEyebrow">十个路段 / 从教学到终局</p>
                 <h2 class="screen-title" id="titleHeading">寻塔之光</h2>
-                <p class="screen-lead">一条固定车道，路肩全是空地。把处置塔架在路边，挡住滚落的施工障碍，别让它们撞进收费站。</p>
-                <div class="screen-grid">
-                  <div class="keyrow"><b>鼠标左键</b><span>在路边空地架塔</span></div>
-                  <div class="keyrow"><b>鼠标右键</b><span>拆塔，回收七成预算</span></div>
+                <p class="screen-lead" id="levelLead">一条固定车道，路肩全是空地。把处置塔架在路边，挡住滚落的施工障碍，别让它们撞进收费站。</p>
+                <div class="levels" id="levelGrid" role="group" aria-label="关卡列表"></div>
+                <div class="screen-grid screen-grid--keys">
+                  <div class="keyrow"><b>左键</b><span>空地架塔，右键拆塔回收七成</span></div>
                   <div class="keyrow"><b>1 / 2</b><span>切换警示灯塔 / 水炮桩</span></div>
-                  <div class="keyrow"><b>R · ESC</b><span>重开 · 暂停与退出</span></div>
+                  <div class="keyrow"><b>R</b><span>重开当前关卡</span></div>
+                  <div class="keyrow"><b>ESC</b><span>暂停，再按一次回关卡列表</span></div>
                 </div>
-                <button class="btn-solid btn-lg" id="btnStart">开始处置</button>
-                <p class="screen-foot">1.1.1 正式版 · 最远记录 <span id="titleBest">第 0 波</span> · 记录只存在本机浏览器</p>
+                <button class="btn-solid btn-lg" id="btnStart">继续挑战</button>
+                <p class="screen-foot">1.2 正式版 · 通关自动解锁下一关 · 进度只存在本机浏览器</p>
               </div>
             </div>
 
@@ -709,48 +809,50 @@ canvas#board {
               <div class="screen-inner">
                 <p class="eyebrow">暂停 / 现场保持</p>
                 <h2 class="screen-title" id="pauseHeading">已暂停</h2>
-                <p class="screen-lead">画面停在当前一帧，塔位和预算都还在。按 ESC 或右侧「继续」按钮回到路面，再按 ESC 直接退出回标题。</p>
+                <p class="screen-lead">画面停在当前一帧，塔位和预算都还在。按 ESC 或右侧「继续」按钮回到路面，再按 ESC 直接回关卡列表。</p>
                 <p class="screen-lead" id="pauseInfo">当前 0 / 12 波 · 预算 220 · 通行 15</p>
                 <div class="btn-row">
                   <button class="btn-solid" id="btnResume">继续处置</button>
-                  <button class="btn-ghost" id="btnRestartPause">重开本局</button>
-                  <button class="btn-ghost" id="btnQuitPause">退出路段</button>
+                  <button class="btn-ghost" id="btnRestartPause">重开本关</button>
+                  <button class="btn-ghost" id="btnQuitPause">返回关卡列表</button>
                 </div>
               </div>
             </div>
 
             <div class="screen" data-screen="win" role="dialog" aria-modal="true" aria-labelledby="winHeading">
               <div class="screen-inner">
-                <p class="eyebrow">路段 01 / 处置完成</p>
+                <p class="eyebrow" id="winEyebrow">关卡 01 / 处置完成</p>
                 <h2 class="screen-title" id="winHeading">路段清理完毕</h2>
-                <p class="screen-lead">十二波障碍全部清掉，车道重新放行。</p>
+                <p class="screen-lead">全部波次的障碍都清掉了，车道重新放行。</p>
                 <div class="tally">
-                  <div><label>完成波次</label><b>12 / 12</b></div>
+                  <div><label>完成波次</label><b id="winClear">0 / 0</b></div>
                   <div><label>清理障碍</label><b id="winCleared">0</b></div>
                   <div><label>剩余预算</label><b id="winMoney">0</b></div>
                   <div><label>用时</label><b id="winTime">0:00</b></div>
                 </div>
+                <p class="screen-lead" id="winUnlock">已解锁下一关</p>
                 <div class="btn-row">
-                  <button class="btn-solid" id="btnAgainWin">再来一局</button>
-                  <button class="btn-ghost" id="btnQuitWin">退出路段</button>
+                  <button class="btn-solid" id="btnNextWin">下一关</button>
+                  <button class="btn-ghost" id="btnAgainWin">再来一局</button>
+                  <button class="btn-ghost" id="btnQuitWin">关卡列表</button>
                 </div>
               </div>
             </div>
 
             <div class="screen" data-screen="lose" role="dialog" aria-modal="true" aria-labelledby="loseHeading">
               <div class="screen-inner">
-                <p class="eyebrow">路段 01 / 中断</p>
+                <p class="eyebrow" id="loseEyebrow">关卡 01 / 中断</p>
                 <h2 class="screen-title" id="loseHeading">通行受阻</h2>
-                <p class="screen-lead">障碍冲进了收费站。这条路段被临时封闭，塔位记录清空。</p>
+                <p class="screen-lead">障碍冲进了收费站。这条路段被临时封闭，塔位记录清空，本关进度会保留。</p>
                 <div class="tally">
                   <div><label>撑到波次</label><b id="loseWave">第 0 波</b></div>
                   <div><label>清理障碍</label><b id="loseCleared">0</b></div>
-                  <div><label>最远记录</label><b id="loseBest">第 0 波</b></div>
+                  <div><label>本关最好</label><b id="loseBest">第 0 波</b></div>
                   <div><label>用时</label><b id="loseTime">0:00</b></div>
                 </div>
                 <div class="btn-row">
-                  <button class="btn-solid" id="btnAgainLose">再来一局</button>
-                  <button class="btn-ghost" id="btnQuitLose">退出路段</button>
+                  <button class="btn-solid" id="btnAgainLose">重试本关</button>
+                  <button class="btn-ghost" id="btnQuitLose">关卡列表</button>
                 </div>
               </div>
             </div>
@@ -838,20 +940,100 @@ canvas#board {
 
   var CELL = 48, COLS = 20, ROWS = 12;
   var W = COLS * CELL, H = ROWS * CELL;
+  var SELL_RATE = 0.7;
+  var PREP_TIME = 8;        // 波次之间的准备时间
+  var TOUCH_CONFIRM = 2.5;  // 触屏：第一次点空地是预览，同一格再点一次才真正架设
+  var BEST_KEY = 'seek-light-best';       // 旧版单关记录，仅用于向关卡档案迁移
+  var SOUND_KEY = 'seek-light-sound';
+  var LEVELS_KEY = 'seek-light-levels';    // 通关进度与每一关的最好成绩
+
+  /* 由当前关卡覆盖的量，resetState 与 HUD 都读它们 */
   var TOTAL_WAVES = 12;
   var START_MONEY = 220;
   var START_LIVES = 15;
-  var SELL_RATE = 0.7;
-  var PREP_TIME = 8;        // 波次之间的准备时间
-  var FIRST_PREP = 15;      // 首波准备时间（留给新玩家看清车道）
-  var TOUCH_CONFIRM = 2.5;  // 触屏：第一次点空地是预览，同一格再点一次才真正架设
-  var BEST_KEY = 'seek-light-best';
-  var SOUND_KEY = 'seek-light-sound';
+  var FIRST_PREP = 15;
+  var HP_STEP = 0.26;
+  var WAVE_BONUS_BASE = 14;
+  var WAVE_BONUS_STEP = 3;
 
-  /* 难度与经济：这几项是整局的调节旋钮，改数值只动这里 */
-  var HP_STEP = 0.26;              // 每往后一波，障碍血量增幅
-  var WAVE_BONUS_BASE = 14;        // 清波基础奖励
-  var WAVE_BONUS_STEP = 3;         // 每波递增的清波奖励
+  /* =========================================================
+     十个关卡
+     waypoints 是车道折线（单位：格），waves / money / lives 是各自的难度旋钮，
+     hpStep 控制每波血量增幅，density 控制每波怪数，from 决定新怪种从第几波混入。
+     ========================================================= */
+
+  var LEVELS = [
+    {
+      no: 1, name: '路肩起步', tag: '教学', stars: 1, waves: 4,
+      money: 320, lives: 25, hpStep: 0.12, density: 0.8, bonus: [22, 4],
+      from: { tire: 3, barrel: 9, concrete: 9 },
+      lead: '一条直角双弯，路肩空得很。先熟悉怎么把塔摆在路边。',
+      waypoints: [[-1.5, 3.5], [9.5, 3.5], [9.5, 9.5], [21.5, 9.5]]
+    },
+    {
+      no: 2, name: '双弯夹道', tag: '恶魔', stars: 5, waves: 10,
+      money: 200, lives: 12, hpStep: 0.72, density: 1.2, bonus: [12, 3], speed: 1.08,
+      from: { tire: 1, barrel: 2, concrete: 4 },
+      lead: '教学关刚结束就是硬仗：车道短、拐角急、第二波就上滚桶。',
+      waypoints: [[-1.5, 1.5], [3.5, 1.5], [3.5, 5.5], [9.5, 5.5], [9.5, 1.5], [14.5, 1.5], [14.5, 9.5], [21.5, 9.5]]
+    },
+    {
+      no: 3, name: '回形走廊', tag: '严苛', stars: 3, waves: 10,
+      money: 220, lives: 14, hpStep: 0.60, density: 1.18, bonus: [14, 3], speed: 1.12,
+      from: { tire: 1, barrel: 3, concrete: 5 },
+      lead: '三段长横道来回折返，中段车道贴着路肩，放塔要算好射程。',
+      waypoints: [[-1.5, 2.5], [12.5, 2.5], [12.5, 6.5], [4.5, 6.5], [4.5, 10.5], [21.5, 10.5]]
+    },
+    {
+      no: 4, name: '之字坡道', tag: '严苛', stars: 4, waves: 11,
+      money: 210, lives: 13, hpStep: 0.64, density: 1.22, bonus: [14, 3], speed: 1.16,
+      from: { tire: 1, barrel: 3, concrete: 5 },
+      lead: '车道先向右再向下，三段横道层层错开，拐角多、覆盖点少。',
+      waypoints: [[-1.5, 4.5], [7.5, 4.5], [7.5, 1.5], [15.5, 1.5], [15.5, 7.5], [3.5, 7.5], [3.5, 11.5], [21.5, 11.5]]
+    },
+    {
+      no: 5, name: '折返长坡', tag: '严苛', stars: 4, waves: 11,
+      money: 200, lives: 13, hpStep: 0.66, density: 1.26, bonus: [13, 3], speed: 1.20,
+      from: { tire: 1, barrel: 2, concrete: 4 },
+      lead: '从底部长驱直入，一路向上折返，后半段留给塔的空地越来越窄。',
+      waypoints: [[-1.5, 10.5], [10.5, 10.5], [10.5, 6.5], [3.5, 6.5], [3.5, 1.5], [17.5, 1.5], [17.5, 8.5], [21.5, 8.5]]
+    },
+    {
+      no: 6, name: '窄道双桥', tag: '炼狱', stars: 5, waves: 11,
+      money: 195, lives: 12, hpStep: 0.68, density: 1.28, bonus: [13, 3], speed: 1.24,
+      from: { tire: 1, barrel: 2, concrete: 4 },
+      lead: '三条长横道把路肩切成细条，塔位零碎，得挑最划算的位置。',
+      waypoints: [[-1.5, 1.5], [6.5, 1.5], [6.5, 4.5], [18.5, 4.5], [18.5, 7.5], [3.5, 7.5], [3.5, 10.5], [21.5, 10.5]]
+    },
+    {
+      no: 7, name: '蛇形长廊', tag: '炼狱', stars: 6, waves: 12,
+      money: 190, lives: 12, hpStep: 0.70, density: 1.30, bonus: [12, 3], speed: 1.28,
+      from: { tire: 1, barrel: 2, concrete: 3 },
+      lead: '车道像蛇一样来回四趟，路程长但塔能覆盖的地段被切得很散。',
+      waypoints: [[-1.5, 1.5], [9.5, 1.5], [9.5, 4.5], [2.5, 4.5], [2.5, 7.5], [16.5, 7.5], [16.5, 10.5], [21.5, 10.5]]
+    },
+    {
+      no: 8, name: '之字密道', tag: '炼狱', stars: 7, waves: 12,
+      money: 190, lives: 11, hpStep: 0.72, density: 1.31, bonus: [12, 3], speed: 1.32,
+      from: { tire: 1, barrel: 2, concrete: 3 },
+      lead: '六段横道挤在一起，只剩一条条窄缝能立塔，选位比数量重要。',
+      waypoints: [[-1.5, 0.5], [15.5, 0.5], [15.5, 2.5], [3.5, 2.5], [3.5, 4.5], [17.5, 4.5], [17.5, 6.5], [2.5, 6.5], [2.5, 8.5], [18.5, 8.5], [18.5, 11.5], [21.5, 11.5]]
+    },
+    {
+      no: 9, name: '交错长街', tag: '终局', stars: 8, waves: 12,
+      money: 195, lives: 10, hpStep: 0.70, density: 1.28, bonus: [11, 3], speed: 1.36,
+      from: { tire: 1, barrel: 2, concrete: 3 },
+      lead: '整张路肩被车道反复割穿，能同时看住两条横道的塔位是稀缺资源。',
+      waypoints: [[-1.5, 0.5], [8.5, 0.5], [8.5, 3.5], [18.5, 3.5], [18.5, 6.5], [2.5, 6.5], [2.5, 9.5], [14.5, 9.5], [14.5, 11.5], [21.5, 11.5]]
+    },
+    {
+      no: 10, name: '终局回路', tag: '终局', stars: 10, waves: 12,
+      money: 195, lives: 9, hpStep: 1.0, density: 1.40, bonus: [10, 3], speed: 1.54,
+      from: { tire: 1, barrel: 1, concrete: 2 },
+      lead: '七段横道、血最厚、预算最紧。能过这一关，就算把这条路上的一切都学会了。',
+      waypoints: [[-1.5, 0.5], [17.5, 0.5], [17.5, 2.5], [2.5, 2.5], [2.5, 4.5], [19.5, 4.5], [19.5, 6.5], [1.5, 6.5], [1.5, 8.5], [16.5, 8.5], [16.5, 10.5], [3.5, 10.5], [3.5, 11.5], [21.5, 11.5]]
+    }
+  ];
 
   var TOWER_SPECS = {
     1: { key: 1, label: '警示灯塔', cost: 60, range: 118, dmg: 10, interval: 0.3, shotSpeed: 330, splash: 0, slowF: 1, slowDur: 0 },
@@ -873,23 +1055,39 @@ canvas#board {
   canvas.height = Math.round(H * dpr);
 
   /* =========================================================
-     固定车道
+     当前关卡的车道（选择关卡时重建）
      ========================================================= */
 
-  var WAYPOINTS = [
-    [-1.5, 2.5], [5.5, 2.5], [5.5, 7.5], [12.5, 7.5],
-    [12.5, 3.5], [17.5, 3.5], [17.5, 9.5], [21.5, 9.5]
-  ];
-
-  var PATH = WAYPOINTS.map(function (p) {
-    return { x: p[0] * CELL, y: p[1] * CELL };
-  });
-
+  var PATH = [];
   var SEGS = [];
   var TOTAL_LEN = 0;
-  (function buildSegs() {
-    for (var i = 1; i < PATH.length; i++) {
-      var a = PATH[i - 1], b = PATH[i];
+  var BLOCKED = new Set();
+  var bg = null;
+  var levelIndex = 0;
+  var LV = LEVELS[0];
+
+  function loadLevelWorld(i) {
+    levelIndex = Math.max(0, Math.min(LEVELS.length - 1, i | 0));
+    LV = LEVELS[levelIndex];
+
+    /* 每关的难度旋钮覆盖全局量，后面所有逻辑只读这几个变量 */
+    TOTAL_WAVES = LV.waves;
+    START_MONEY = LV.money;
+    START_LIVES = LV.lives;
+    HP_STEP = LV.hpStep;
+    WAVE_BONUS_BASE = LV.bonus[0];
+    WAVE_BONUS_STEP = LV.bonus[1];
+    FIRST_PREP = LV.no === 1 ? 15 : 10;
+    PREP_TIME = LV.no === 1 ? 8 : 7;
+
+    PATH = LV.waypoints.map(function (p) {
+      return { x: p[0] * CELL, y: p[1] * CELL };
+    });
+
+    SEGS = [];
+    TOTAL_LEN = 0;
+    for (var i2 = 1; i2 < PATH.length; i2++) {
+      var a = PATH[i2 - 1], b = PATH[i2];
       var len = Math.hypot(b.x - a.x, b.y - a.y);
       SEGS.push({
         a: a, b: b, len: len, start: TOTAL_LEN,
@@ -897,7 +1095,19 @@ canvas#board {
       });
       TOTAL_LEN += len;
     }
-  })();
+
+    /* 车道压住的格子不能建塔：沿路径每 4 像素采样一次落格 */
+    BLOCKED = new Set();
+    for (var d = 0; d <= TOTAL_LEN; d += 4) {
+      var p = posAt(d);
+      var c = Math.floor(p.x / CELL);
+      var r = Math.floor(p.y / CELL);
+      if (c >= 0 && c < COLS && r >= 0 && r < ROWS) BLOCKED.add(c + ',' + r);
+    }
+
+    waveSizeCache = {};
+    bg = buildGround();
+  }
 
   function segAt(d) {
     for (var i = 0; i < SEGS.length; i++) {
@@ -933,16 +1143,6 @@ canvas#board {
     var s = segAt(d);
     return { x: -s.dy, y: s.dx };
   }
-
-  var BLOCKED = new Set();
-  (function buildBlocked() {
-    for (var d = 0; d <= TOTAL_LEN; d += 4) {
-      var p = posAt(d);
-      var c = Math.floor(p.x / CELL);
-      var r = Math.floor(p.y / CELL);
-      if (c >= 0 && c < COLS && r >= 0 && r < ROWS) BLOCKED.add(c + ',' + r);
-    }
-  })();
 
   /* =========================================================
      状态
@@ -1153,8 +1353,9 @@ canvas#board {
       c.restore();
     }
 
-    var st = posAt(700);
-    var stSeg = segAt(700);
+    var stD = Math.max(120, Math.min(TOTAL_LEN - 90, TOTAL_LEN * 0.42));
+    var st = posAt(stD);
+    var stSeg = segAt(stD);
     c.save();
     c.translate(st.x, st.y);
     c.rotate(Math.atan2(stSeg.dy, stSeg.dx));
@@ -1162,7 +1363,7 @@ canvas#board {
     c.font = '600 26px "IBM Plex Mono", monospace';
     c.textAlign = 'center';
     c.textBaseline = 'middle';
-    c.fillText('01', 0, 1);
+    c.fillText((LV.no < 10 ? '0' : '') + LV.no, 0, 1);
     c.restore();
   }
 
@@ -1180,21 +1381,32 @@ canvas#board {
       c.fillRect(x - 1, y - 5, 2, 3);
     }
 
-    var gx = W - 26, gy = 9.5 * CELL;
+    /* 出口收费站：跟着车道最后一段的朝向摆，并收进画布内，别停在画面外 */
+    var gateD = TOTAL_LEN - 26;
+    for (var gd = TOTAL_LEN - 26; gd > TOTAL_LEN * 0.4; gd -= 6) {
+      var q = posAt(gd);
+      if (q.x <= W - 36 && q.y <= H - 36) { gateD = gd; break; }
+    }
+    var gp = posAt(gateD);
+    var gs = segAt(gateD);
+    c.save();
+    c.translate(gp.x, gp.y);
+    c.rotate(Math.atan2(gs.dy, gs.dx));
     c.fillStyle = '#20242a';
-    c.fillRect(gx - 3, gy - 36, 6, 14);
-    c.fillRect(gx - 3, gy + 24, 6, 14);
+    c.fillRect(-3, -36, 6, 14);
+    c.fillRect(-3, 24, 6, 14);
     for (var i = 0; i < 11; i++) {
       c.fillStyle = (i % 2) ? '#efeade' : '#d4542c';
-      c.fillRect(gx - 3, gy - 22 + i * 4, 6, 4);
+      c.fillRect(-3, -21 + i * 4, 6, 4);
     }
     c.fillStyle = 'rgba(32,36,42,0.55)';
     c.font = '500 8px "IBM Plex Mono", monospace';
-    c.textAlign = 'right';
-    c.fillText('TOLL', gx + 2, gy - 40);
+    c.textAlign = 'center';
+    c.fillText('TOLL', 0, -44);
+    c.restore();
   }
 
-  var bg = buildGround();
+  /* 底图在 loadLevelWorld 里按关卡重建 */
 
   /* 塔位底座（阴影、虚线框、四角准星）每帧都一样，烘焙成一张小图复用 */
   var TOWER_BASE_SIZE = 44;
@@ -1240,11 +1452,21 @@ canvas#board {
 
   function buildWave(w) {
     var hpMul = 1 + (w - 1) * HP_STEP;
+    var d = LV.density;
+    /* 越往后出怪越密：间隔最多压缩到七成 */
+    var gapK = Math.max(0.72, 1 - w * 0.022);
     var groups = [];
-    groups.push({ type: 'gravel', count: 5 + Math.floor(w * 1.3), gap: 0.5 });
-    if (w >= 2) groups.push({ type: 'tire', count: 2 + Math.floor(w * 0.7), gap: 0.7 });
-    if (w >= 4) groups.push({ type: 'barrel', count: 2 + Math.floor(w * 0.6), gap: 0.62 });
-    if (w >= 6) groups.push({ type: 'concrete', count: 1 + Math.floor(w / 3), gap: 1.1 });
+
+    groups.push({ type: 'gravel', count: Math.max(2, Math.round((4 + w * 1.2) * d)), gap: 0.5 * gapK });
+    if (w >= LV.from.tire) {
+      groups.push({ type: 'tire', count: Math.max(1, Math.round((1 + w * 0.6) * d)), gap: 0.68 * gapK });
+    }
+    if (w >= LV.from.barrel) {
+      groups.push({ type: 'barrel', count: Math.max(1, Math.round((1 + w * 0.5) * d)), gap: 0.6 * gapK });
+    }
+    if (w >= LV.from.concrete) {
+      groups.push({ type: 'concrete', count: Math.max(1, Math.round((1 + w * 0.22) * d)), gap: 1.0 * gapK });
+    }
 
     var queue = [];
     var t = 0;
@@ -1268,6 +1490,7 @@ canvas#board {
     state.waveActive = true;
     state.countdown = 0;
     toast('第 ' + state.wave + ' 波进场');
+    if (LV.no === 1 && state.wave === 1) toast('教学 · 漏过一只就扣通行值，别让它们冲进收费站');
     sfx.wave();
     syncHud();
   }
@@ -1280,6 +1503,7 @@ canvas#board {
       type: item.type,
       spec: spec,
       size: spec.size,
+      speed: spec.speed * (LV.speed || 1),
       hp: hp,
       maxHp: hp,
       dist: 0,
@@ -1517,7 +1741,7 @@ canvas#board {
     for (var i = 0; i < state.enemies.length; i++) {
       var e = state.enemies[i];
       if (e.dead) continue;
-      var sp = e.spec.speed;
+      var sp = e.speed || e.spec.speed;
       if (e.slowT > 0) {
         sp *= e.slowF;
         e.slowT -= dt;
@@ -2040,6 +2264,11 @@ canvas#board {
     sfx.build();
     toast('已架设 ' + spec.label + ' · 预算 -' + spec.cost);
     syncHud();
+    /* 第一关顺手把三件事讲完，不额外占版面 */
+    if (LV.no === 1) {
+      if (state.towers.length === 1) toast('教学 · 按 1 / 2 换塔型，拐角放水炮桩更好用');
+      else if (state.towers.length === 3) toast('教学 · 右键点塔可以拆掉，回收七成预算');
+    }
   }
 
   function sellTower(t) {
@@ -2172,30 +2401,53 @@ canvas#board {
   }
 
   /* =========================================================
-     最佳记录
+     进度档案：解锁到第几关 + 每一关的最远波次
      ========================================================= */
 
-  function readBest() {
+  var progress = { unlocked: 1, best: {} };
+
+  function readProgress() {
     try {
-      var v = window.localStorage.getItem(BEST_KEY);
-      var n = v ? parseInt(v, 10) : 0;
-      return isNaN(n) ? 0 : n;
+      var raw = window.localStorage.getItem(LEVELS_KEY);
+      if (raw) {
+        var o = JSON.parse(raw);
+        var u = parseInt(o && o.unlocked, 10);
+        progress.unlocked = isNaN(u) ? 1 : Math.max(1, Math.min(LEVELS.length, u));
+        progress.best = (o && typeof o.best === 'object' && o.best) ? o.best : {};
+      }
     } catch (err) {
-      return 0;
+      /* 隐私模式下忽略，进游戏仍可玩，只是不记进度 */
     }
   }
 
-  function recordBest(n) {
+  function saveProgress() {
     try {
-      var best = readBest();
-      if (n > best) window.localStorage.setItem(BEST_KEY, String(n));
+      window.localStorage.setItem(LEVELS_KEY, JSON.stringify(progress));
     } catch (err) {
-      /* 隐私模式下忽略 */
+      /* 同上 */
+    }
+  }
+
+  function levelBest(no) {
+    return parseInt(progress.best[no], 10) || 0;
+  }
+
+  function noteLevelBest(no, wave) {
+    if (wave > levelBest(no)) {
+      progress.best[no] = wave;
+      saveProgress();
+    }
+  }
+
+  function unlockLevel(no) {
+    if (no <= LEVELS.length && no > progress.unlocked) {
+      progress.unlocked = no;
+      saveProgress();
     }
   }
 
   function bestLabel(n) {
-    return '第 ' + n + ' 波';
+    return n > 0 ? '第 ' + n + ' 波' : '还没开张';
   }
 
   /* =========================================================
@@ -2205,11 +2457,53 @@ canvas#board {
   var overlay = document.getElementById('overlay');
   var screens = Array.prototype.slice.call(overlay.querySelectorAll('.screen'));
 
+  function pad2(n) {
+    return (n < 10 ? '0' : '') + n;
+  }
+
+  function starsOf(n) {
+    var s = '';
+    for (var i = 0; i < n; i++) s += '★';
+    return s;
+  }
+
+  /* 关卡列表按进度重建：解锁的可以点，没解锁的点不动 */
+  function renderLevelCards() {
+    var grid = document.getElementById('levelGrid');
+    if (!grid) return;
+    var html = '';
+    LEVELS.forEach(function (L, i) {
+      var unlocked = i < progress.unlocked;
+      var best = levelBest(L.no);
+      var cleared = best >= L.waves;
+      html += '<button class="level-card' + (unlocked ? '' : ' is-locked') + '" data-index="' + i + '"' +
+        (unlocked ? '' : ' disabled aria-disabled="true"') +
+        ' aria-label="第 ' + L.no + ' 关 ' + L.name + '，' + L.tag + '，' + L.waves + ' 波' + (unlocked ? '' : '，未解锁') + '">' +
+        '<span class="lv-no">' + pad2(L.no) + '</span>' +
+        '<span class="lv-body"><strong>' + L.name + '</strong>' +
+        '<em>' + L.tag + ' · ' + L.waves + ' 波 · 通行 ' + L.lives + '</em></span>' +
+        '<span class="lv-right"><span class="lv-stars" aria-hidden="true">' + starsOf(L.stars) + '</span>' +
+        '<span class="lv-state">' + (cleared ? '已通关' : (unlocked ? (best ? '最远 第 ' + best + ' 波' : '未挑战') : '未解锁')) + '</span></span>' +
+        '</button>';
+    });
+    grid.innerHTML = html;
+
+    var cont = document.getElementById('btnStart');
+    if (cont) {
+      var idx = Math.min(LEVELS.length - 1, progress.unlocked - 1);
+      cont.textContent = '继续挑战 · ' + pad2(LEVELS[idx].no) + ' ' + LEVELS[idx].name;
+    }
+  }
+
   function showScreen(name) {
     if (!name) {
       overlay.hidden = true;
       screens.forEach(function (s) { s.classList.remove('is-open'); });
       return;
+    }
+    if (name === 'title') {
+      syncLevelLabels();
+      renderLevelCards();
     }
     overlay.hidden = false;
     var opened = null;
@@ -2227,13 +2521,26 @@ canvas#board {
     }
   }
 
-  function beginRun() {
+  /* 棋盘标题、结算标题跟着当前关卡走 */
+  function syncLevelLabels() {
+    var bt = document.getElementById('boardTitle');
+    if (bt) bt.textContent = '关卡 ' + pad2(LV.no) + ' / ' + pad2(LEVELS.length) + ' · ' + LV.tag + ' · ' + LV.name;
+    var le = document.getElementById('levelLead');
+    if (le) le.textContent = LV.lead;
+    el.best.textContent = bestLabel(levelBest(LV.no));
+  }
+
+  function beginRun(level) {
+    if (typeof level === 'number' && level !== levelIndex) loadLevelWorld(level);
     resetState();
     state.mode = 'playing';
     showScreen(null);
+    syncLevelLabels();
     stopLoop();
     startLoop();
     render();
+    if (LV.no === 1) toast('教学 · 点路肩空地架第一座塔，悬停能看落点与射程');
+    else if (LV.no === 2) toast('恶魔模式 · 车道很短，第二波就有快滚桶');
   }
 
   function pauseGame() {
@@ -2242,9 +2549,9 @@ canvas#board {
     state.mode = 'paused';
     var info = document.getElementById('pauseInfo');
     if (info) {
-      info.textContent = '当前 ' + Math.max(1, state.wave) + ' / ' + TOTAL_WAVES + ' 波 · 用时 ' +
-        formatTime(state.runTime) + ' · 预算 ' + state.money + ' · 通行 ' + state.lives +
-        ' · 塔位 ' + state.towers.length;
+      info.textContent = '关卡 ' + pad2(LV.no) + ' · 当前 ' + Math.max(1, state.wave) + ' / ' + TOTAL_WAVES +
+        ' 波 · 用时 ' + formatTime(state.runTime) + ' · 预算 ' + state.money +
+        ' · 通行 ' + state.lives + ' · 塔位 ' + state.towers.length;
     }
     showScreen('pause');
     syncHud();
@@ -2263,20 +2570,19 @@ canvas#board {
     resetState();
     state.mode = 'menu';
     showScreen('title');
-    setBestTexts();
     render();
   }
 
   function loseGame() {
     stopLoop();
     state.mode = 'lose';
-    recordBest(state.maxWave);
+    noteLevelBest(LV.no, Math.max(1, state.maxWave));
     render();
+    document.getElementById('loseEyebrow').textContent = '关卡 ' + pad2(LV.no) + ' / ' + LV.name + ' · 中断';
     document.getElementById('loseWave').textContent = '第 ' + Math.max(1, state.maxWave) + ' 波';
     document.getElementById('loseCleared').textContent = String(state.cleared);
-    document.getElementById('loseBest').textContent = bestLabel(readBest());
+    document.getElementById('loseBest').textContent = bestLabel(levelBest(LV.no));
     document.getElementById('loseTime').textContent = formatTime(state.runTime);
-    setBestTexts();
     showScreen('lose');
     sfx.lose();
   }
@@ -2285,12 +2591,27 @@ canvas#board {
     stopLoop();
     state.mode = 'win';
     state.maxWave = TOTAL_WAVES;
-    recordBest(TOTAL_WAVES);
+    noteLevelBest(LV.no, TOTAL_WAVES);
+    unlockLevel(LV.no + 1);
     render();
+    document.getElementById('winEyebrow').textContent = '关卡 ' + pad2(LV.no) + ' / ' + LV.name + ' · 处置完成';
+    document.getElementById('winClear').textContent = TOTAL_WAVES + ' / ' + TOTAL_WAVES;
     document.getElementById('winCleared').textContent = String(state.cleared);
     document.getElementById('winMoney').textContent = String(state.money);
     document.getElementById('winTime').textContent = formatTime(state.runTime);
-    setBestTexts();
+
+    var next = LEVELS[LV.no];
+    var btnNext = document.getElementById('btnNextWin');
+    var unlockText = document.getElementById('winUnlock');
+    if (next) {
+      btnNext.disabled = false;
+      btnNext.textContent = '下一关 · ' + pad2(next.no) + ' ' + next.name;
+      unlockText.textContent = '已解锁 第 ' + pad2(next.no) + ' 关「' + next.name + '」（' + next.tag + '）';
+    } else {
+      btnNext.disabled = true;
+      btnNext.textContent = '十关全部通关';
+      unlockText.textContent = '全部路段清理完毕，这条路上的障碍再也不用怕了。';
+    }
     showScreen('win');
     sfx.win();
   }
@@ -2300,12 +2621,6 @@ canvas#board {
     var m = Math.floor(total / 60);
     var s = total % 60;
     return m + ':' + (s < 10 ? '0' : '') + s;
-  }
-
-  function setBestTexts() {
-    var label = bestLabel(readBest());
-    document.getElementById('titleBest').textContent = label;
-    el.best.textContent = label;
   }
 
   function onEscape() {
@@ -2424,7 +2739,7 @@ canvas#board {
     } else if (ev.key === '2') {
       setSelected(2);
     } else if (ev.key === 'r' || ev.key === 'R') {
-      if (!ev.repeat) beginRun();
+      if (!ev.repeat) beginRun(levelIndex);
     } else if (ev.key === 'Escape') {
       if (!ev.repeat) onEscape();
     }
@@ -2440,14 +2755,29 @@ canvas#board {
 
   document.getElementById('btnStart').addEventListener('click', function () {
     ensureAudio();
-    beginRun();
+    beginRun(Math.min(LEVELS.length - 1, progress.unlocked - 1));
   });
+
+  /* 关卡卡片：点哪关进哪关，未解锁的按钮本身是 disabled 点不动 */
+  document.getElementById('levelGrid').addEventListener('click', function (ev) {
+    var card = ev.target.closest('.level-card');
+    if (!card || card.disabled) return;
+    var idx = parseInt(card.getAttribute('data-index'), 10);
+    if (isNaN(idx)) return;
+    ensureAudio();
+    beginRun(idx);
+  });
+
   document.getElementById('btnResume').addEventListener('click', resumeGame);
-  document.getElementById('btnRestartPause').addEventListener('click', beginRun);
+  document.getElementById('btnRestartPause').addEventListener('click', function () { beginRun(levelIndex); });
   document.getElementById('btnQuitPause').addEventListener('click', quitToMenu);
-  document.getElementById('btnAgainWin').addEventListener('click', beginRun);
+  document.getElementById('btnAgainWin').addEventListener('click', function () { beginRun(levelIndex); });
+  document.getElementById('btnNextWin').addEventListener('click', function () {
+    if (LEVELS[LV.no]) beginRun(LV.no);
+    else quitToMenu();
+  });
   document.getElementById('btnQuitWin').addEventListener('click', quitToMenu);
-  document.getElementById('btnAgainLose').addEventListener('click', beginRun);
+  document.getElementById('btnAgainLose').addEventListener('click', function () { beginRun(levelIndex); });
   document.getElementById('btnQuitLose').addEventListener('click', quitToMenu);
 
   el.btnWave.addEventListener('click', function () {
@@ -2480,12 +2810,14 @@ canvas#board {
      ========================================================= */
 
   readSoundPref();
+  readProgress();
+  loadLevelWorld(Math.min(LEVELS.length - 1, progress.unlocked - 1));
   resetState();
   state.mode = 'menu';
   setSound(soundOn, true);
-  setBestTexts();
   render();
   syncHud();
+  showScreen('title');
 })();
 
 </script>
