@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>寻塔之光 · 路边塔防 v1.1</title>
-<meta name="description" content="寻塔之光 1.1：一条固定车道、十二波障碍、路边架塔的单文件塔防小游戏，原生 HTML + Canvas，无需安装。">
+<title>寻塔之光 · 路边塔防 v1.1.1</title>
+<meta name="description" content="寻塔之光 1.1.1：一条固定车道、十二波障碍、路边架塔的单文件塔防小游戏，原生 HTML + Canvas，无需安装。">
 <meta name="theme-color" content="#22262c">
-<meta property="og:title" content="寻塔之光 · 路边塔防 v1.1">
+<meta property="og:title" content="寻塔之光 · 路边塔防 v1.1.1">
 <meta property="og:description" content="把处置塔架在路边，挡住滚落的施工障碍，别让它们撞进收费站。十二波，单文件，打开即玩。">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Crect%20width='24'%20height='24'%20fill='%2322262c'/%3E%3Ccircle%20cx='12'%20cy='10'%20r='5'%20fill='%23e9a338'/%3E%3Cpath%20d='M6%2020h12'%20stroke='%23f1ece0'%20stroke-width='2'/%3E%3C/svg%3E">
@@ -665,7 +665,7 @@ canvas#board {
         </span>
         <div class="brand-text">
           <h1>寻塔之光</h1>
-          <p>SEEK THE LIGHT · 路边塔防 <span class="ver">v1.1</span></p>
+          <p>SEEK THE LIGHT · 路边塔防 <span class="ver">v1.1.1</span></p>
         </div>
       </div>
       <div class="stats">
@@ -701,7 +701,7 @@ canvas#board {
                   <div class="keyrow"><b>R · ESC</b><span>重开 · 暂停与退出</span></div>
                 </div>
                 <button class="btn-solid btn-lg" id="btnStart">开始处置</button>
-                <p class="screen-foot">1.1 正式版 · 最远记录 <span id="titleBest">第 0 波</span> · 记录只存在本机浏览器</p>
+                <p class="screen-foot">1.1.1 正式版 · 最远记录 <span id="titleBest">第 0 波</span> · 记录只存在本机浏览器</p>
               </div>
             </div>
 
@@ -1279,6 +1279,7 @@ canvas#board {
     state.enemies.push({
       type: item.type,
       spec: spec,
+      size: spec.size,
       hp: hp,
       maxHp: hp,
       dist: 0,
@@ -1819,7 +1820,8 @@ canvas#board {
   }
 
   function drawEnemy(e) {
-    var r = e.size;
+    /* size 是绘制基准半径：生成时从怪物规格拷入，缺失会让整只怪画成 NaN 尺寸而不可见 */
+    var r = e.size || e.spec.size;
     ctx.save();
     ctx.translate(e.x, e.y);
 
