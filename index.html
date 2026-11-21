@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>寻塔之光 · 路边塔防 v1.2.1</title>
-<meta name="description" content="寻塔之光 1.2.1：十个关卡的路边塔防小游戏，从教学路段一路打到终局回路，原生 HTML + Canvas，单文件，无需安装。">
+<title>寻塔之光 · 路边塔防 v1.2.2</title>
+<meta name="description" content="寻塔之光 1.2.2：十个关卡的路边塔防小游戏，从教学路段一路打到终局回路，原生 HTML + Canvas，单文件，无需安装。">
 <meta name="theme-color" content="#22262c">
-<meta property="og:title" content="寻塔之光 · 路边塔防 v1.2.1">
+<meta property="og:title" content="寻塔之光 · 路边塔防 v1.2.2">
 <meta property="og:description" content="把处置塔架在路边，挡住滚落的施工障碍。十个关卡，从教学到终局，单文件，打开即玩。">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Crect%20width='24'%20height='24'%20fill='%2322262c'/%3E%3Ccircle%20cx='12'%20cy='10'%20r='5'%20fill='%23e9a338'/%3E%3Cpath%20d='M6%2020h12'%20stroke='%23f1ece0'%20stroke-width='2'/%3E%3C/svg%3E">
@@ -764,7 +764,7 @@ canvas#board {
         </span>
         <div class="brand-text">
           <h1>寻塔之光</h1>
-          <p>SEEK THE LIGHT · 路边塔防 <span class="ver">v1.2.1</span></p>
+          <p>SEEK THE LIGHT · 路边塔防 <span class="ver">v1.2.2</span></p>
         </div>
       </div>
       <div class="stats">
@@ -801,7 +801,7 @@ canvas#board {
                   <div class="keyrow"><b>ESC</b><span>暂停，再按一次回关卡列表</span></div>
                 </div>
                 <button class="btn-solid btn-lg" id="btnStart">继续挑战</button>
-                <p class="screen-foot">1.2.1 正式版 · 通关自动解锁下一关 · 进度只存在本机浏览器</p>
+                <p class="screen-foot">1.2.2 正式版 · 通关自动解锁下一关 · 进度只存在本机浏览器</p>
               </div>
             </div>
 
@@ -971,63 +971,63 @@ canvas#board {
       waypoints: [[-1.5, 3.5], [9.5, 3.5], [9.5, 9.5], [21.5, 9.5]]
     },
     {
-      no: 2, name: '双弯夹道', tag: '恶魔', stars: 3, waves: 6,
-      money: 250, lives: 20, hpStep: 0.2, density: 1.05, bonus: [16, 3], speed: 1.02,
-      from: { tire: 2, barrel: 4, concrete: 6 },
-      lead: '教学关刚结束就是硬仗：车道短、拐角急，第 2 波起滚桶混编，整体压力约为上一关的四倍。',
+      no: 2, name: '双弯夹道', tag: '普通', stars: 7, waves: 10,
+      money: 260, lives: 12, hpStep: 0.9, density: 1.25, bonus: [14, 3], speed: 1.12,
+      from: { tire: 1, barrel: 2, concrete: 4 },
+      lead: '教学关之后直接跳到全游戏最难的一档：第 1 波就上废轮胎，第 4 波起水泥块，血量一波比一波厚。',
       waypoints: [[-1.5, 1.5], [3.5, 1.5], [3.5, 5.5], [9.5, 5.5], [9.5, 1.5], [14.5, 1.5], [14.5, 9.5], [21.5, 9.5]]
     },
     {
-      no: 3, name: '回形走廊', tag: '严苛', stars: 3, waves: 10,
-      money: 220, lives: 14, hpStep: 0.60, density: 1.18, bonus: [14, 3], speed: 1.12,
-      from: { tire: 1, barrel: 3, concrete: 5 },
-      lead: '三段长横道来回折返，中段车道贴着路肩，放塔要算好射程。',
+      no: 3, name: '回形走廊', tag: '普通', stars: 1, waves: 4,
+      money: 380, lives: 26, hpStep: 0.2, density: 0.9, bonus: [20, 4], speed: 1.0,
+      from: { tire: 3, barrel: 9, concrete: 9 },
+      lead: '难度突然放水的一关：只有碎石和少量废轮胎，塔位充足，随便摆都能过。',
       waypoints: [[-1.5, 2.5], [12.5, 2.5], [12.5, 6.5], [4.5, 6.5], [4.5, 10.5], [21.5, 10.5]]
     },
     {
-      no: 4, name: '之字坡道', tag: '严苛', stars: 4, waves: 11,
-      money: 210, lives: 13, hpStep: 0.64, density: 1.22, bonus: [14, 3], speed: 1.16,
-      from: { tire: 1, barrel: 3, concrete: 5 },
-      lead: '车道先向右再向下，三段横道层层错开，拐角多、覆盖点少。',
+      no: 4, name: '之字坡道', tag: '普通', stars: 7, waves: 10,
+      money: 265, lives: 14, hpStep: 1.15, density: 1.35, bonus: [14, 3], speed: 1.22,
+      from: { tire: 1, barrel: 2, concrete: 4 },
+      lead: '刚放完水又翻回来：拐角更多、血量台阶更陡，和上一关的轻松完全不是一件事。',
       waypoints: [[-1.5, 4.5], [7.5, 4.5], [7.5, 1.5], [15.5, 1.5], [15.5, 7.5], [3.5, 7.5], [3.5, 11.5], [21.5, 11.5]]
     },
     {
-      no: 5, name: '折返长坡', tag: '严苛', stars: 4, waves: 11,
+      no: 5, name: '折返长坡', tag: '普通', stars: 4, waves: 11,
       money: 200, lives: 13, hpStep: 0.66, density: 1.26, bonus: [13, 3], speed: 1.20,
       from: { tire: 1, barrel: 2, concrete: 4 },
       lead: '从底部长驱直入，一路向上折返，后半段留给塔的空地越来越窄。',
       waypoints: [[-1.5, 10.5], [10.5, 10.5], [10.5, 6.5], [3.5, 6.5], [3.5, 1.5], [17.5, 1.5], [17.5, 8.5], [21.5, 8.5]]
     },
     {
-      no: 6, name: '窄道双桥', tag: '炼狱', stars: 5, waves: 11,
+      no: 6, name: '窄道双桥', tag: '高难度', stars: 5, waves: 11,
       money: 195, lives: 12, hpStep: 0.68, density: 1.28, bonus: [13, 3], speed: 1.24,
       from: { tire: 1, barrel: 2, concrete: 4 },
       lead: '三条长横道把路肩切成细条，塔位零碎，得挑最划算的位置。',
       waypoints: [[-1.5, 1.5], [6.5, 1.5], [6.5, 4.5], [18.5, 4.5], [18.5, 7.5], [3.5, 7.5], [3.5, 10.5], [21.5, 10.5]]
     },
     {
-      no: 7, name: '蛇形长廊', tag: '炼狱', stars: 6, waves: 12,
+      no: 7, name: '蛇形长廊', tag: '高难度', stars: 6, waves: 12,
       money: 190, lives: 12, hpStep: 0.70, density: 1.30, bonus: [12, 3], speed: 1.28,
       from: { tire: 1, barrel: 2, concrete: 3 },
       lead: '车道像蛇一样来回四趟，路程长但塔能覆盖的地段被切得很散。',
       waypoints: [[-1.5, 1.5], [9.5, 1.5], [9.5, 4.5], [2.5, 4.5], [2.5, 7.5], [16.5, 7.5], [16.5, 10.5], [21.5, 10.5]]
     },
     {
-      no: 8, name: '之字密道', tag: '炼狱', stars: 7, waves: 12,
+      no: 8, name: '之字密道', tag: '高难度', stars: 7, waves: 12,
       money: 190, lives: 11, hpStep: 0.72, density: 1.31, bonus: [12, 3], speed: 1.32,
       from: { tire: 1, barrel: 2, concrete: 3 },
       lead: '六段横道挤在一起，只剩一条条窄缝能立塔，选位比数量重要。',
       waypoints: [[-1.5, 0.5], [15.5, 0.5], [15.5, 2.5], [3.5, 2.5], [3.5, 4.5], [17.5, 4.5], [17.5, 6.5], [2.5, 6.5], [2.5, 8.5], [18.5, 8.5], [18.5, 11.5], [21.5, 11.5]]
     },
     {
-      no: 9, name: '交错长街', tag: '终局', stars: 8, waves: 12,
+      no: 9, name: '交错长街', tag: '后很难', stars: 8, waves: 12,
       money: 195, lives: 10, hpStep: 0.70, density: 1.28, bonus: [11, 3], speed: 1.36,
       from: { tire: 1, barrel: 2, concrete: 3 },
       lead: '整张路肩被车道反复割穿，能同时看住两条横道的塔位是稀缺资源。',
       waypoints: [[-1.5, 0.5], [8.5, 0.5], [8.5, 3.5], [18.5, 3.5], [18.5, 6.5], [2.5, 6.5], [2.5, 9.5], [14.5, 9.5], [14.5, 11.5], [21.5, 11.5]]
     },
     {
-      no: 10, name: '终局回路', tag: '终局', stars: 10, waves: 12,
+      no: 10, name: '终局回路', tag: '特难', stars: 10, waves: 12,
       money: 195, lives: 9, hpStep: 1.0, density: 1.40, bonus: [10, 3], speed: 1.54,
       from: { tire: 1, barrel: 1, concrete: 2 },
       lead: '七段横道、血最厚、预算最紧。能过这一关，就算把这条路上的一切都学会了。',
