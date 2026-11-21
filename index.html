@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>寻塔之光 · 路边塔防 v1.2</title>
-<meta name="description" content="寻塔之光 1.2：十个关卡的路边塔防小游戏，从教学路段一路打到终局回路，原生 HTML + Canvas，单文件，无需安装。">
+<title>寻塔之光 · 路边塔防 v1.2.1</title>
+<meta name="description" content="寻塔之光 1.2.1：十个关卡的路边塔防小游戏，从教学路段一路打到终局回路，原生 HTML + Canvas，单文件，无需安装。">
 <meta name="theme-color" content="#22262c">
-<meta property="og:title" content="寻塔之光 · 路边塔防 v1.2">
+<meta property="og:title" content="寻塔之光 · 路边塔防 v1.2.1">
 <meta property="og:description" content="把处置塔架在路边，挡住滚落的施工障碍。十个关卡，从教学到终局，单文件，打开即玩。">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Crect%20width='24'%20height='24'%20fill='%2322262c'/%3E%3Ccircle%20cx='12'%20cy='10'%20r='5'%20fill='%23e9a338'/%3E%3Cpath%20d='M6%2020h12'%20stroke='%23f1ece0'%20stroke-width='2'/%3E%3C/svg%3E">
@@ -764,7 +764,7 @@ canvas#board {
         </span>
         <div class="brand-text">
           <h1>寻塔之光</h1>
-          <p>SEEK THE LIGHT · 路边塔防 <span class="ver">v1.2</span></p>
+          <p>SEEK THE LIGHT · 路边塔防 <span class="ver">v1.2.1</span></p>
         </div>
       </div>
       <div class="stats">
@@ -801,7 +801,7 @@ canvas#board {
                   <div class="keyrow"><b>ESC</b><span>暂停，再按一次回关卡列表</span></div>
                 </div>
                 <button class="btn-solid btn-lg" id="btnStart">继续挑战</button>
-                <p class="screen-foot">1.2 正式版 · 通关自动解锁下一关 · 进度只存在本机浏览器</p>
+                <p class="screen-foot">1.2.1 正式版 · 通关自动解锁下一关 · 进度只存在本机浏览器</p>
               </div>
             </div>
 
@@ -971,10 +971,10 @@ canvas#board {
       waypoints: [[-1.5, 3.5], [9.5, 3.5], [9.5, 9.5], [21.5, 9.5]]
     },
     {
-      no: 2, name: '双弯夹道', tag: '恶魔', stars: 5, waves: 10,
-      money: 200, lives: 12, hpStep: 0.72, density: 1.2, bonus: [12, 3], speed: 1.08,
-      from: { tire: 1, barrel: 2, concrete: 4 },
-      lead: '教学关刚结束就是硬仗：车道短、拐角急、第二波就上滚桶。',
+      no: 2, name: '双弯夹道', tag: '恶魔', stars: 3, waves: 6,
+      money: 250, lives: 20, hpStep: 0.2, density: 1.05, bonus: [16, 3], speed: 1.02,
+      from: { tire: 2, barrel: 4, concrete: 6 },
+      lead: '教学关刚结束就是硬仗：车道短、拐角急，第 2 波起滚桶混编，整体压力约为上一关的四倍。',
       waypoints: [[-1.5, 1.5], [3.5, 1.5], [3.5, 5.5], [9.5, 5.5], [9.5, 1.5], [14.5, 1.5], [14.5, 9.5], [21.5, 9.5]]
     },
     {
