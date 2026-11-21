@@ -3,7 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>寻塔之光 · 塔防</title>
+<title>寻塔之光 · 路边塔防 v1.0</title>
+<meta name="description" content="寻塔之光 1.0：一条固定车道、十二波障碍、路边架塔的单文件塔防小游戏，原生 HTML + Canvas，无需安装。">
+<meta name="theme-color" content="#22262c">
+<meta property="og:title" content="寻塔之光 · 路边塔防 v1.0">
+<meta property="og:description" content="把处置塔架在路边，挡住滚落的施工障碍，别让它们撞进收费站。十二波，单文件，打开即玩。">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Crect%20width='24'%20height='24'%20fill='%2322262c'/%3E%3Ccircle%20cx='12'%20cy='10'%20r='5'%20fill='%23e9a338'/%3E%3Cpath%20d='M6%2020h12'%20stroke='%23f1ece0'%20stroke-width='2'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
 <style>
 :root {
@@ -97,10 +103,36 @@ body::before {
 
 .brand-text p {
   margin: 5px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 9.5px;
   letter-spacing: 0.22em;
   color: rgba(241, 236, 224, 0.52);
+}
+
+/* 正式版标记 */
+.ver {
+  letter-spacing: 0.08em;
+  padding: 1px 5px;
+  border: 1px solid rgba(233, 163, 56, 0.5);
+  color: #e9a338;
+  font-size: 9px;
+}
+
+/* 屏幕阅读器专用文案，不占版面 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 .stats {
@@ -300,7 +332,7 @@ canvas#board {
   color: var(--paper);
 }
 
-tc-icon, .tc-icon { width: 34px; height: 34px; }
+.tc-icon { width: 34px; height: 34px; }
 
 .tc-icon svg { width: 34px; height: 34px; display: block; }
 
@@ -422,9 +454,19 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
 .btn-wide[hidden] { display: none; }
 
 .btn-ghost b {
-  font-family: var(--font-mono);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-weight: 600;
 }
+
+/* 暂停 / 声音 并排，宽度让给按钮文字 */
+.btn-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btn-pair .btn-ghost { width: 100%; }
 
 .btn-lg {
   padding: 14px 20px;
@@ -539,7 +581,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
 
 .tally {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
   gap: 10px;
   padding: 14px 0 16px;
   margin-bottom: 18px;
@@ -623,7 +665,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
         </span>
         <div class="brand-text">
           <h1>寻塔之光</h1>
-          <p>SEEK THE LIGHT · 路边塔防</p>
+          <p>SEEK THE LIGHT · 路边塔防 <span class="ver">v1.0</span></p>
         </div>
       </div>
       <div class="stats">
@@ -641,13 +683,15 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
           <span class="board-status"><i class="dot"></i><span id="hudStatus" role="status" aria-live="polite">待开始</span></span>
         </div>
         <div class="board-wrap">
-          <canvas id="board" width="960" height="576" aria-label="寻塔之光棋盘"></canvas>
+          <canvas id="board" width="960" height="576" aria-label="寻塔之光棋盘" aria-describedby="boardHelp"></canvas>
+          <p class="sr-only" id="boardHelp">固定车道从左侧进场，向右经三次转向到收费站。用左键点路肩空地建塔，右键拆塔；数字键 1、2 切换塔型，R 重开，ESC 暂停。</p>
+          <p class="sr-only" id="liveToast" role="status" aria-live="polite" aria-atomic="true"></p>
 
           <div class="overlay" id="overlay">
-            <div class="screen is-open" data-screen="title">
+            <div class="screen is-open" data-screen="title" role="dialog" aria-modal="true" aria-labelledby="titleHeading">
               <div class="screen-inner">
                 <p class="eyebrow">路段 01 / 双向单车道 / 待处置</p>
-                <h2 class="screen-title">寻塔之光</h2>
+                <h2 class="screen-title" id="titleHeading">寻塔之光</h2>
                 <p class="screen-lead">一条固定车道，路肩全是空地。把处置塔架在路边，挡住滚落的施工障碍，别让它们撞进收费站。</p>
                 <div class="screen-grid">
                   <div class="keyrow"><b>鼠标左键</b><span>在路边空地架塔</span></div>
@@ -656,15 +700,16 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
                   <div class="keyrow"><b>R · ESC</b><span>重开 · 暂停与退出</span></div>
                 </div>
                 <button class="btn-solid btn-lg" id="btnStart">开始处置</button>
-                <p class="screen-foot">最远记录 <span id="titleBest">第 0 波</span> · 记录只存在本机浏览器</p>
+                <p class="screen-foot">1.0 正式版 · 最远记录 <span id="titleBest">第 0 波</span> · 记录只存在本机浏览器</p>
               </div>
             </div>
 
-            <div class="screen" data-screen="pause">
+            <div class="screen" data-screen="pause" role="dialog" aria-modal="true" aria-labelledby="pauseHeading">
               <div class="screen-inner">
                 <p class="eyebrow">暂停 / 现场保持</p>
-                <h2 class="screen-title">已暂停</h2>
+                <h2 class="screen-title" id="pauseHeading">已暂停</h2>
                 <p class="screen-lead">画面停在当前一帧，塔位和预算都还在。按 ESC 或右侧「继续」按钮回到路面，再按 ESC 直接退出回标题。</p>
+                <p class="screen-lead" id="pauseInfo">当前 0 / 12 波 · 预算 220 · 通行 15</p>
                 <div class="btn-row">
                   <button class="btn-solid" id="btnResume">继续处置</button>
                   <button class="btn-ghost" id="btnRestartPause">重开本局</button>
@@ -673,15 +718,16 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
               </div>
             </div>
 
-            <div class="screen" data-screen="win">
+            <div class="screen" data-screen="win" role="dialog" aria-modal="true" aria-labelledby="winHeading">
               <div class="screen-inner">
                 <p class="eyebrow">路段 01 / 处置完成</p>
-                <h2 class="screen-title">路段清理完毕</h2>
+                <h2 class="screen-title" id="winHeading">路段清理完毕</h2>
                 <p class="screen-lead">十二波障碍全部清掉，车道重新放行。</p>
                 <div class="tally">
                   <div><label>完成波次</label><b>12 / 12</b></div>
                   <div><label>清理障碍</label><b id="winCleared">0</b></div>
                   <div><label>剩余预算</label><b id="winMoney">0</b></div>
+                  <div><label>用时</label><b id="winTime">0:00</b></div>
                 </div>
                 <div class="btn-row">
                   <button class="btn-solid" id="btnAgainWin">再来一局</button>
@@ -690,15 +736,16 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
               </div>
             </div>
 
-            <div class="screen" data-screen="lose">
+            <div class="screen" data-screen="lose" role="dialog" aria-modal="true" aria-labelledby="loseHeading">
               <div class="screen-inner">
                 <p class="eyebrow">路段 01 / 中断</p>
-                <h2 class="screen-title">通行受阻</h2>
+                <h2 class="screen-title" id="loseHeading">通行受阻</h2>
                 <p class="screen-lead">障碍冲进了收费站。这条路段被临时封闭，塔位记录清空。</p>
                 <div class="tally">
                   <div><label>撑到波次</label><b id="loseWave">第 0 波</b></div>
                   <div><label>清理障碍</label><b id="loseCleared">0</b></div>
                   <div><label>最远记录</label><b id="loseBest">第 0 波</b></div>
+                  <div><label>用时</label><b id="loseTime">0:00</b></div>
                 </div>
                 <div class="btn-row">
                   <button class="btn-solid" id="btnAgainLose">再来一局</button>
@@ -730,7 +777,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
             <span class="tc-body">
               <strong>警示灯塔</strong>
               <em>单点 · 射程 2.4 格</em>
-              <small>伤害 10 · 间隔 0.30 秒</small>
+              <small>伤害 10 · 间隔 0.3s</small>
             </span>
             <span class="tc-cost"><b>60</b><span>预算</span></span>
           </button>
@@ -758,9 +805,13 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
           <div class="readout">
             <div><label>下一波倒计时</label><b id="hudCountdown">—</b></div>
             <div><label>本波剩余</label><b id="hudRemain">0</b></div>
+            <div><label>下一波规模</label><b id="hudNext">—</b></div>
           </div>
           <button class="btn-solid" id="btnWave">立即开波</button>
-          <button class="btn-ghost btn-wide" id="btnPause" aria-label="暂停或继续本局">暂停</button>
+          <div class="btn-pair">
+            <button class="btn-ghost" id="btnPause" aria-label="暂停或继续本局">暂停</button>
+            <button class="btn-ghost" id="btnSound" aria-pressed="true" aria-label="开关音效">声音 开</button>
+          </div>
           <button class="btn-ghost btn-wide" id="btnSell" hidden>拆除选中塔 · 回收 <b id="sellRefund">0</b></button>
         </section>
 
@@ -794,6 +845,12 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
   var FIRST_PREP = 15;      // 首波准备时间（留给新玩家看清车道）
   var TOUCH_CONFIRM = 2.5;  // 触屏：第一次点空地是预览，同一格再点一次才真正架设
   var BEST_KEY = 'seek-light-best';
+  var SOUND_KEY = 'seek-light-sound';
+
+  /* 难度与经济：这几项是整局的调节旋钮，改数值只动这里 */
+  var HP_STEP = 0.26;              // 每往后一波，障碍血量增幅
+  var WAVE_BONUS_BASE = 14;        // 清波基础奖励
+  var WAVE_BONUS_STEP = 3;         // 每波递增的清波奖励
 
   var TOWER_SPECS = {
     1: { key: 1, label: '警示灯塔', cost: 60, range: 118, dmg: 10, interval: 0.3, shotSpeed: 330, splash: 0, slowF: 1, slowDur: 0 },
@@ -896,14 +953,15 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     money: START_MONEY,
     lives: START_LIVES,
     cleared: 0,
-    clearedWaves: 0,
     maxWave: 0,
+    runTime: 0,
     towers: [],
     enemies: [],
     shots: [],
     particles: [],
     effects: [],
     queue: [],
+    queueIdx: 0,
     selected: 1,
     waveActive: false,
     waveClock: 0,
@@ -914,22 +972,28 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     time: 0,
     toastText: '',
     toastT: 0,
+    toastW: 0,
     leakFx: 0
   };
+
+  /* 塔位索引：格子 -> 塔，避免每帧、每次悬停都线性扫描整张塔列表 */
+  var towerMap = new Map();
 
   function resetState() {
     state.wave = 0;
     state.money = START_MONEY;
     state.lives = START_LIVES;
     state.cleared = 0;
-    state.clearedWaves = 0;
     state.maxWave = 0;
+    state.runTime = 0;
     state.towers = [];
+    towerMap.clear();
     state.enemies = [];
     state.shots = [];
     state.particles = [];
     state.effects = [];
     state.queue = [];
+    state.queueIdx = 0;
     state.selected = 1;
     state.waveActive = false;
     state.waveClock = 0;
@@ -939,6 +1003,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     state.touchT = 0;
     state.time = 0;
     state.toastT = 0;
+    state.toastW = 0;
     state.leakFx = 0;
   }
 
@@ -1130,12 +1195,50 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
 
   var bg = buildGround();
 
+  /* 塔位底座（阴影、虚线框、四角准星）每帧都一样，烘焙成一张小图复用 */
+  var TOWER_BASE_SIZE = 44;
+
+  function buildTowerBase() {
+    var cv = document.createElement('canvas');
+    cv.width = Math.round(TOWER_BASE_SIZE * dpr);
+    cv.height = Math.round(TOWER_BASE_SIZE * dpr);
+    var c = cv.getContext('2d');
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.translate(TOWER_BASE_SIZE / 2, TOWER_BASE_SIZE / 2);
+
+    c.fillStyle = 'rgba(30,34,40,0.16)';
+    c.beginPath();
+    c.ellipse(3, 4, 15, 11, 0, 0, Math.PI * 2);
+    c.fill();
+
+    c.strokeStyle = 'rgba(112,104,86,0.65)';
+    c.lineWidth = 1;
+    c.setLineDash([5, 4]);
+    c.strokeRect(-15, -15, 30, 30);
+    c.setLineDash([]);
+
+    c.strokeStyle = 'rgba(60,56,44,0.45)';
+    c.lineWidth = 1.3;
+    var corners = [[-16, -16, 1, 1], [16, -16, -1, 1], [-16, 16, 1, -1], [16, 16, -1, -1]];
+    for (var i = 0; i < 4; i++) {
+      var k = corners[i];
+      c.beginPath();
+      c.moveTo(k[0] + k[2] * 4, k[1]);
+      c.lineTo(k[0], k[1]);
+      c.lineTo(k[0], k[1] + k[3] * 4);
+      c.stroke();
+    }
+    return cv;
+  }
+
+  var towerBase = buildTowerBase();
+
   /* =========================================================
      波次
      ========================================================= */
 
   function buildWave(w) {
-    var hpMul = 1 + (w - 1) * 0.2;
+    var hpMul = 1 + (w - 1) * HP_STEP;
     var groups = [];
     groups.push({ type: 'gravel', count: 5 + Math.floor(w * 1.3), gap: 0.5 });
     if (w >= 2) groups.push({ type: 'tire', count: 2 + Math.floor(w * 0.7), gap: 0.7 });
@@ -1159,10 +1262,12 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     state.wave += 1;
     if (state.wave > state.maxWave) state.maxWave = state.wave;
     state.queue = buildWave(state.wave);
+    state.queueIdx = 0;
     state.waveClock = 0;
     state.waveActive = true;
     state.countdown = 0;
     toast('第 ' + state.wave + ' 波进场');
+    sfx.wave();
     syncHud();
   }
 
@@ -1188,8 +1293,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
 
   function endWave() {
     state.waveActive = false;
-    state.clearedWaves = state.wave;
-    var bonus = 14 + state.wave * 3;
+    var bonus = WAVE_BONUS_BASE + state.wave * WAVE_BONUS_STEP;
     state.money += bonus;
     if (state.wave >= TOTAL_WAVES) {
       winGame();
@@ -1291,11 +1395,99 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
   }
 
   /* =========================================================
+     音效（WebAudio 现场合成，不引任何外部音频文件）
+     ========================================================= */
+
+  var soundOn = true;
+  var audioCtx = null;
+  var lastShootMs = 0;
+
+  function readSoundPref() {
+    try { if (window.localStorage.getItem(SOUND_KEY) === '0') soundOn = false; } catch (err) {}
+  }
+
+  function saveSoundPref() {
+    try { window.localStorage.setItem(SOUND_KEY, soundOn ? '1' : '0'); } catch (err) {}
+  }
+
+  /* 首次用户手势时才建 AudioContext，符合浏览器自动播放策略 */
+  function ensureAudio() {
+    if (!soundOn) return null;
+    if (audioCtx) {
+      if (audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch (err) {} }
+      return audioCtx;
+    }
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      audioCtx = new AC();
+    } catch (err) {
+      audioCtx = null;
+    }
+    return audioCtx;
+  }
+
+  function tone(freq, dur, type, vol, slideTo) {
+    if (!soundOn) return;
+    var ac = ensureAudio();
+    if (!ac) return;
+    try {
+      var o = ac.createOscillator();
+      var g = ac.createGain();
+      var now = ac.currentTime;
+      o.type = type || 'sine';
+      o.frequency.setValueAtTime(freq, now);
+      if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, now + dur);
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(vol, now + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      o.connect(g);
+      g.connect(ac.destination);
+      o.start(now);
+      o.stop(now + dur + 0.03);
+    } catch (err) {
+      /* 音频不可用时静默降级，不影响游戏 */
+    }
+  }
+
+  function chords(notes, type, vol, step) {
+    notes.forEach(function (f, i) {
+      window.setTimeout(function () { tone(f, 0.22, type, vol); }, i * step);
+    });
+  }
+
+  var sfx = {
+    build: function () { tone(520, 0.1, 'triangle', 0.06, 780); },
+    sell: function () { tone(420, 0.12, 'sawtooth', 0.045, 240); },
+    deny: function () { tone(180, 0.12, 'square', 0.04); },
+    shoot: function (type) {
+      /* 每秒最多 9 次：多塔齐射时不至于堆出一片噪声和大量音频节点 */
+      var nowMs = Date.now();
+      if (nowMs - lastShootMs < 110) return;
+      lastShootMs = nowMs;
+      tone(type === 1 ? 900 : 620, 0.05, 'triangle', 0.018, type === 1 ? 700 : 470);
+    },
+    leak: function () { tone(150, 0.32, 'sawtooth', 0.07, 92); },
+    wave: function () { chords([392, 523], 'triangle', 0.05, 140); },
+    win: function () { chords([523, 659, 784, 1046], 'triangle', 0.055, 160); },
+    lose: function () { chords([330, 262, 196], 'sawtooth', 0.05, 210); }
+  };
+
+  function setSound(on, silent) {
+    soundOn = !!on;
+    saveSoundPref();
+    el.btnSound.textContent = soundOn ? '声音 开' : '声音 关';
+    el.btnSound.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
+    if (soundOn && !silent) { ensureAudio(); tone(660, 0.08, 'triangle', 0.05, 880); }
+  }
+
+  /* =========================================================
      主循环
      ========================================================= */
 
   function update(dt) {
     state.time += dt;
+    state.runTime += dt;
     if (state.toastT > 0) state.toastT -= dt;
     if (state.leakFx > 0) state.leakFx -= dt;
     if (state.touchT && state.time - state.touchT > TOUCH_CONFIRM) {
@@ -1313,8 +1505,10 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
       }
     } else {
       state.waveClock += dt;
-      while (state.queue.length && state.queue[0].t <= state.waveClock) {
-        spawnEnemy(state.queue.shift());
+      /* 用下标游标出怪，代替每只都 shift() 一次整队搬家 */
+      while (state.queueIdx < state.queue.length && state.queue[state.queueIdx].t <= state.waveClock) {
+        spawnEnemy(state.queue[state.queueIdx]);
+        state.queueIdx += 1;
       }
     }
 
@@ -1336,6 +1530,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
         if (state.lives < 0) state.lives = 0;
         state.leakFx = 0.9;
         toast(e.spec.label + ' 冲出路面 · 通行 -' + e.spec.leak);
+        sfx.leak();
       }
     }
     compactDead(state.enemies);
@@ -1356,6 +1551,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
       t.aim = Math.atan2(target.y - t.y, target.x - t.x);
       t.cool = spec.interval;
       t.flash = 0.16;
+      sfx.shoot(t.type);
       state.shots.push({
         x: t.x + Math.cos(t.aim) * 15,
         y: t.y + Math.sin(t.aim) * 15,
@@ -1412,7 +1608,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     }
     compactAlive(state.effects);
 
-    if (state.waveActive && state.queue.length === 0 && state.enemies.length === 0) {
+    if (state.waveActive && state.queueIdx >= state.queue.length && state.enemies.length === 0) {
       endWave();
     }
   }
@@ -1457,9 +1653,10 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
      ========================================================= */
 
   function render() {
+    /* 底图和设备像素 1:1 贴回，省掉每帧一次缩放重采样；它不透明且铺满，无需 clearRect */
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(bg, 0, 0);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    /* 底图不透明且铺满全画布，直接覆盖，不需要再 clearRect 一次 */
-    ctx.drawImage(bg, 0, 0, W, H);
     drawRange();
     drawGhost();
     drawTowers();
@@ -1539,28 +1736,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
       ctx.scale(sc, sc);
     }
 
-    ctx.fillStyle = 'rgba(30,34,40,0.16)';
-    ctx.beginPath();
-    ctx.ellipse(3, 4, 15, 11, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = 'rgba(112,104,86,0.65)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([5, 4]);
-    ctx.strokeRect(-15, -15, 30, 30);
-    ctx.setLineDash([]);
-
-    ctx.strokeStyle = 'rgba(60,56,44,0.45)';
-    ctx.lineWidth = 1.3;
-    var corners = [[-16, -16, 1, 1], [16, -16, -1, 1], [-16, 16, 1, -1], [16, 16, -1, -1]];
-    for (var i = 0; i < 4; i++) {
-      var k = corners[i];
-      ctx.beginPath();
-      ctx.moveTo(k[0] + k[2] * 4, k[1]);
-      ctx.lineTo(k[0], k[1]);
-      ctx.lineTo(k[0], k[1] + k[3] * 4);
-      ctx.stroke();
-    }
+    ctx.drawImage(towerBase, -TOWER_BASE_SIZE / 2, -TOWER_BASE_SIZE / 2, TOWER_BASE_SIZE, TOWER_BASE_SIZE);
 
     if (t.type === 1) {
       ctx.fillStyle = '#20242a';
@@ -1799,8 +1975,8 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     ctx.save();
     ctx.globalAlpha = a;
     ctx.font = '500 12px "Noto Sans SC", "PingFang SC", sans-serif';
-    var tw = ctx.measureText(state.toastText).width;
-    var w = tw + 30, h = 30;
+    if (!state.toastW) state.toastW = ctx.measureText(state.toastText).width;
+    var w = state.toastW + 30, h = 30;
     var x = W / 2 - w / 2, y = H - 62;
     ctx.fillStyle = 'rgba(32,36,42,0.9)';
     ctx.fillRect(x, y, w, h);
@@ -1817,33 +1993,35 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
      格子与塔
      ========================================================= */
 
+  function cellKey(c, r) {
+    return c + ',' + r;
+  }
+
   function towerAt(c, r) {
-    for (var i = 0; i < state.towers.length; i++) {
-      if (state.towers[i].c === c && state.towers[i].r === r) return state.towers[i];
-    }
-    return null;
+    return towerMap.get(cellKey(c, r)) || null;
   }
 
   function isFreeCell(c, r) {
     if (c < 0 || c >= COLS || r < 0 || r >= ROWS) return false;
-    if (BLOCKED.has(c + ',' + r)) return false;
-    if (towerAt(c, r)) return false;
-    return true;
+    if (BLOCKED.has(cellKey(c, r))) return false;
+    return !towerMap.has(cellKey(c, r));
   }
 
   function tryBuild(c, r) {
     if (state.mode !== 'playing') return;
     if (!isFreeCell(c, r)) {
       toast('这块地摆不了塔');
+      sfx.deny();
       return;
     }
     var spec = TOWER_SPECS[state.selected];
     if (state.money < spec.cost) {
       toast('预算不足 · 需要 ' + spec.cost);
+      sfx.deny();
       return;
     }
     state.money -= spec.cost;
-    state.towers.push({
+    var t = {
       type: state.selected,
       c: c, r: r,
       x: (c + 0.5) * CELL,
@@ -1853,22 +2031,38 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
       flash: 0,
       born: state.time,
       seed: Math.random()
-    });
+    };
+    state.towers.push(t);
+    towerMap.set(cellKey(c, r), t);
+    sfx.build();
+    toast('已架设 ' + spec.label + ' · 预算 -' + spec.cost);
     syncHud();
   }
 
   function sellTower(t) {
     var refund = Math.round(TOWER_SPECS[t.type].cost * SELL_RATE);
+    var at = state.towers.indexOf(t);
+    if (at === -1) return;
     state.money += refund;
-    state.towers = state.towers.filter(function (x) { return x !== t; });
+    /* 原地删除，不再整体重建数组（换掉 filter 产生的垃圾对象） */
+    state.towers.splice(at, 1);
+    towerMap.delete(cellKey(t.c, t.r));
     if (state.inspect === t) state.inspect = null;
     toast('已拆除 · 回收 ' + refund + ' 预算');
+    sfx.sell();
     syncHud();
   }
+
+  var lastToastText = '';
 
   function toast(text) {
     state.toastText = text;
     state.toastT = 2.2;
+    if (text !== lastToastText) {
+      lastToastText = text;
+      state.toastW = 0;           // 换文字了，下次绘制重新量宽度
+      liveToast.textContent = text;
+    }
   }
 
   /* =========================================================
@@ -1884,15 +2078,26 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     status2: document.getElementById('hudStatus2'),
     countdown: document.getElementById('hudCountdown'),
     remain: document.getElementById('hudRemain'),
+    next: document.getElementById('hudNext'),
     best: document.getElementById('hudBest'),
     towers: document.getElementById('hudTowers'),
     btnWave: document.getElementById('btnWave'),
     btnPause: document.getElementById('btnPause'),
+    btnSound: document.getElementById('btnSound'),
     btnSell: document.getElementById('btnSell'),
     sellRefund: document.getElementById('sellRefund'),
     cardT1: document.getElementById('cardT1'),
     cardT2: document.getElementById('cardT2')
   };
+
+  var liveToast = document.getElementById('liveToast');
+
+  /* 每波怪数只跟波次有关，算一次存下来，供 HUD 预览用 */
+  var waveSizeCache = {};
+  function waveSize(w) {
+    if (!waveSizeCache[w]) waveSizeCache[w] = buildWave(w).length;
+    return waveSizeCache[w];
+  }
 
   function statusText() {
     if (state.mode === 'menu') return '待开始';
@@ -1916,13 +2121,16 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
 
   function syncHud() {
     var status = statusText();
-    var remain = state.queue.length + state.enemies.length;
+    var remain = Math.max(0, state.queue.length - state.queueIdx) + state.enemies.length;
     var cd = (state.mode === 'playing' && !state.waveActive)
       ? Math.max(0, state.countdown).toFixed(1) + 's'
       : '—';
+    var nextWave = state.wave + 1;
+    var nextCount = nextWave <= TOTAL_WAVES ? waveSize(nextWave) : 0;
+    var nextText = nextWave > TOTAL_WAVES ? '结束' : nextCount + ' 个';
     var inspectKey = state.inspect ? state.inspect.c + ',' + state.inspect.r : '-';
     var sig = [state.wave, state.lives, state.money, state.cleared, status, remain, cd,
-      state.towers.length, state.waveActive, state.mode, state.selected, inspectKey].join('|');
+      state.towers.length, state.waveActive, state.mode, state.selected, inspectKey, nextText].join('|');
     if (sig === hudSig) return;
     hudSig = sig;
 
@@ -1934,6 +2142,7 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     el.status2.textContent = status;
     el.countdown.textContent = cd;
     el.remain.textContent = String(remain);
+    el.next.textContent = nextText;
     el.towers.textContent = String(state.towers.length);
 
     el.btnWave.disabled = state.mode !== 'playing' || state.waveActive;
@@ -1997,9 +2206,19 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
       return;
     }
     overlay.hidden = false;
+    var opened = null;
     screens.forEach(function (s) {
-      s.classList.toggle('is-open', s.getAttribute('data-screen') === name);
+      var on = s.getAttribute('data-screen') === name;
+      s.classList.toggle('is-open', on);
+      if (on) opened = s;
     });
+    /* 打开卡片时把焦点交给主按钮，键盘和读屏用户不用再摸一遍页面 */
+    if (opened) {
+      var primary = opened.querySelector('.btn-solid');
+      if (primary) {
+        try { primary.focus({ preventScroll: true }); } catch (err) { primary.focus(); }
+      }
+    }
   }
 
   function beginRun() {
@@ -2015,6 +2234,11 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     if (state.mode !== 'playing') return;
     stopLoop();
     state.mode = 'paused';
+    var info = document.getElementById('pauseInfo');
+    if (info) {
+      info.textContent = '当前 ' + Math.max(1, state.wave) + ' / ' + TOTAL_WAVES + ' 波 · 预算 ' +
+        state.money + ' · 通行 ' + state.lives + ' · 塔位 ' + state.towers.length;
+    }
     showScreen('pause');
     syncHud();
   }
@@ -2044,21 +2268,31 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
     document.getElementById('loseWave').textContent = '第 ' + Math.max(1, state.maxWave) + ' 波';
     document.getElementById('loseCleared').textContent = String(state.cleared);
     document.getElementById('loseBest').textContent = bestLabel(readBest());
+    document.getElementById('loseTime').textContent = formatTime(state.runTime);
     setBestTexts();
     showScreen('lose');
+    sfx.lose();
   }
 
   function winGame() {
     stopLoop();
     state.mode = 'win';
-    state.clearedWaves = TOTAL_WAVES;
     state.maxWave = TOTAL_WAVES;
     recordBest(TOTAL_WAVES);
     render();
     document.getElementById('winCleared').textContent = String(state.cleared);
     document.getElementById('winMoney').textContent = String(state.money);
+    document.getElementById('winTime').textContent = formatTime(state.runTime);
     setBestTexts();
     showScreen('win');
+    sfx.win();
+  }
+
+  function formatTime(sec) {
+    var total = Math.max(0, Math.floor(sec));
+    var m = Math.floor(total / 60);
+    var s = total % 60;
+    return m + ':' + (s < 10 ? '0' : '') + s;
   }
 
   function setBestTexts() {
@@ -2099,6 +2333,9 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
   canvas.addEventListener('pointermove', function (ev) {
     if (ev.pointerType !== 'mouse') return;
     var cell = cellFromEvent(ev);
+    var prev = state.hover;
+    /* 同一格内的移动不重复跑 HUD；鼠标每秒能派发上百次 pointermove */
+    if ((!cell && !prev) || (cell && prev && cell.c === prev.c && cell.r === prev.r)) return;
     state.hover = cell;
     state.inspect = cell ? towerAt(cell.c, cell.r) : null;
     syncHud();
@@ -2169,19 +2406,20 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
   });
 
   function drawCurrentFrame() {
-    if (state.mode === 'playing' && rafId === null) render();
-    else if (state.mode !== 'playing') render();
+    /* 运行中由 rAF 负责刷新；暂停 / 菜单态只有这里手动画一次 */
+    if (state.mode !== 'playing' || rafId === null) render();
   }
 
   window.addEventListener('keydown', function (ev) {
+    ensureAudio();
     if (ev.key === '1') {
       setSelected(1);
     } else if (ev.key === '2') {
       setSelected(2);
     } else if (ev.key === 'r' || ev.key === 'R') {
-      beginRun();
+      if (!ev.repeat) beginRun();
     } else if (ev.key === 'Escape') {
-      onEscape();
+      if (!ev.repeat) onEscape();
     }
   });
 
@@ -2193,7 +2431,10 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
      按钮绑定
      ========================================================= */
 
-  document.getElementById('btnStart').addEventListener('click', beginRun);
+  document.getElementById('btnStart').addEventListener('click', function () {
+    ensureAudio();
+    beginRun();
+  });
   document.getElementById('btnResume').addEventListener('click', resumeGame);
   document.getElementById('btnRestartPause').addEventListener('click', beginRun);
   document.getElementById('btnQuitPause').addEventListener('click', quitToMenu);
@@ -2223,12 +2464,18 @@ tc-icon, .tc-icon { width: 34px; height: 34px; }
   el.cardT1.addEventListener('click', function () { setSelected(1); });
   el.cardT2.addEventListener('click', function () { setSelected(2); });
 
+  el.btnSound.addEventListener('click', function () {
+    setSound(!soundOn);
+  });
+
   /* =========================================================
      启动
      ========================================================= */
 
+  readSoundPref();
   resetState();
   state.mode = 'menu';
+  setSound(soundOn, true);
   setBestTexts();
   render();
   syncHud();
