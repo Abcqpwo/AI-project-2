@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>寻塔之光 · 路边塔防 v1.2.2</title>
-<meta name="description" content="寻塔之光 1.2.2：十个关卡的路边塔防小游戏，从教学路段一路打到终局回路，原生 HTML + Canvas，单文件，无需安装。">
+<title>寻塔之光 · 末日撤离 v1.3.0</title>
+<meta name="description" content="寻塔之光 1.3.0：末日丧尸题材的路边塔防。十段撤离走廊、老博士的剧情简报、山上滚落的碎石与抢修，原生 HTML + Canvas，单文件，打开即玩。">
 <meta name="theme-color" content="#22262c">
-<meta property="og:title" content="寻塔之光 · 路边塔防 v1.2.2">
-<meta property="og:description" content="把处置塔架在路边，挡住滚落的施工障碍。十个关卡，从教学到终局，单文件，打开即玩。">
+<meta property="og:title" content="寻塔之光 · 末日撤离 v1.3.0">
+<meta property="og:description" content="丧尸潮过后三年，把警示塔架回路边，守住最后十段撤离走廊。老博士、剧情简报、山体落石与抢修，单文件打开即玩。">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Crect%20width='24'%20height='24'%20fill='%2322262c'/%3E%3Ccircle%20cx='12'%20cy='10'%20r='5'%20fill='%23e9a338'/%3E%3Cpath%20d='M6%2020h12'%20stroke='%23f1ece0'%20stroke-width='2'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
@@ -712,6 +712,171 @@ canvas#board {
   margin-bottom: 16px;
 }
 
+/* ---------- 剧情简报 ---------- */
+
+.story {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background:
+    radial-gradient(80% 60% at 50% 16%, rgba(233, 163, 56, 0.12), rgba(0, 0, 0, 0) 62%),
+    linear-gradient(180deg, rgba(18, 20, 24, 0.93), rgba(10, 11, 13, 0.97));
+}
+
+.story[hidden] { display: none; }
+
+.story-card {
+  display: flex;
+  gap: 16px;
+  width: min(640px, 100%);
+  padding: 14px;
+  background: #f7f2e5;
+  border: 1px solid #2b2f36;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.5);
+}
+
+.story-portrait {
+  position: relative;
+  flex: 0 0 132px;
+  width: 132px;
+  height: 160px;
+  overflow: hidden;
+  background: #16181c;
+  border: 1px solid #2b2f36;
+}
+
+.story-portrait canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.story-portrait i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -14px;
+  height: 14px;
+  background: linear-gradient(180deg, rgba(233, 163, 56, 0), rgba(233, 163, 56, 0.5));
+  animation: scan 2.6s linear infinite;
+}
+
+@keyframes scan {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(178px); }
+}
+
+.story-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.story-who {
+  margin: 0;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: #b4661f;
+}
+
+.story-text {
+  flex: 1 1 auto;
+  margin: 8px 0 10px;
+  min-height: 4.6em;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: #22262c;
+}
+
+.story-text::after {
+  content: "▍";
+  margin-left: 1px;
+  color: #d4542c;
+  animation: caret 1s steps(1) infinite;
+}
+
+@keyframes caret {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.story-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(32, 36, 42, 0.16);
+}
+
+.story-index {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  color: #6f725f;
+}
+
+.story-foot .btn-row {
+  margin: 0;
+  flex-wrap: nowrap;
+}
+
+.story-foot .btn-solid {
+  flex: 0 0 auto;
+}
+
+/* ---------- 关卡内引导 ---------- */
+
+.coach {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 20;
+  width: min(340px, calc(100% - 24px));
+  padding: 9px 12px 10px;
+  background: rgba(20, 22, 26, 0.93);
+  color: #f3eee2;
+  border-left: 3px solid #e9a338;
+  border-radius: 3px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.38);
+  pointer-events: none;
+}
+
+.coach[hidden] { display: none; }
+
+.coach-step {
+  display: block;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: #e9a338;
+}
+
+.coach-text {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.coach-hint {
+  display: block;
+  margin-top: 5px;
+  font-size: 9.5px;
+  color: #a9a49a;
+}
+
+.btn-solid.is-cue { animation: cueGlow 1.6s ease-in-out infinite; }
+
+@keyframes cueGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(233, 163, 56, 0); }
+  50% { box-shadow: 0 0 0 4px rgba(233, 163, 56, 0.35); }
+}
+
 /* ---------- 响应式 ---------- */
 
 @media (max-width: 1040px) {
@@ -741,9 +906,25 @@ canvas#board {
   }
 }
 
+@media (max-width: 560px) {
+  .story { padding: 12px; }
+  .story-card { flex-direction: column; gap: 10px; padding: 12px; }
+  .story-portrait { flex: 0 0 auto; width: 104px; height: 124px; align-self: flex-start; }
+  .story-text { min-height: 5.6em; font-size: 13.5px; }
+  /* 窄屏上引导条改成棋盘下方的一栏，不再压住车道和推荐塔位 */
+  .coach {
+    position: static;
+    width: auto;
+    margin: 8px 0 0;
+    box-shadow: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tower-card { transition: none; }
   .btn-solid { transition: none; }
+  .story-portrait i { display: none; }
+  .btn-solid.is-cue { animation: none; }
 }
 
 </style>
@@ -764,7 +945,7 @@ canvas#board {
         </span>
         <div class="brand-text">
           <h1>寻塔之光</h1>
-          <p>SEEK THE LIGHT · 路边塔防 <span class="ver">v1.2.2</span></p>
+          <p>SEEK THE LIGHT · 末日撤离 <span class="ver">v1.3.0</span></p>
         </div>
       </div>
       <div class="stats">
@@ -784,15 +965,15 @@ canvas#board {
         </div>
         <div class="board-wrap">
           <canvas id="board" width="960" height="576" aria-label="寻塔之光棋盘" aria-describedby="boardHelp"></canvas>
-          <p class="sr-only" id="boardHelp">车道从左侧进场，折返几段后到右侧收费站。用左键点路肩空地建塔，右键拆塔；数字键 1、2 切换塔型，R 重开，ESC 暂停。</p>
+          <p class="sr-only" id="boardHelp">丧尸从左侧进场，折返几段后冲向右侧收费站。左键点路肩空地建塔，右键拆塔并回收七成预算；数字键 1、2 切换塔型，塔被落石砸坏后花 25 抢修，R 重开，ESC 暂停。</p>
           <p class="sr-only" id="liveToast" role="status" aria-live="polite" aria-atomic="true"></p>
 
           <div class="overlay" id="overlay">
             <div class="screen screen--wide is-open" data-screen="title" role="dialog" aria-modal="true" aria-labelledby="titleHeading">
               <div class="screen-inner">
-                <p class="eyebrow" id="titleEyebrow">十个路段 / 从教学到终局</p>
+                <p class="eyebrow" id="titleEyebrow">丧尸潮后第三年 / 十段撤离走廊</p>
                 <h2 class="screen-title" id="titleHeading">寻塔之光</h2>
-                <p class="screen-lead" id="levelLead">一条固定车道，路肩全是空地。把处置塔架在路边，挡住滚落的施工障碍，别让它们撞进收费站。</p>
+                <p class="screen-lead" id="levelLead">丧尸潮过去三年，这条废弃公路上只剩几盏还亮着的灯。把塔架在路肩，别让尸群摸到收费站。</p>
                 <div class="levels" id="levelGrid" role="group" aria-label="关卡列表"></div>
                 <div class="screen-grid screen-grid--keys">
                   <div class="keyrow"><b>左键</b><span>空地架塔，右键拆塔回收七成</span></div>
@@ -801,7 +982,7 @@ canvas#board {
                   <div class="keyrow"><b>ESC</b><span>暂停，再按一次回关卡列表</span></div>
                 </div>
                 <button class="btn-solid btn-lg" id="btnStart">继续挑战</button>
-                <p class="screen-foot">1.2.2 正式版 · 通关自动解锁下一关 · 进度只存在本机浏览器</p>
+                <p class="screen-foot">1.3.0 末日丧尸版 · 每关开场有老博士的简报 · 通关自动解锁下一关</p>
               </div>
             </div>
 
@@ -822,11 +1003,11 @@ canvas#board {
             <div class="screen" data-screen="win" role="dialog" aria-modal="true" aria-labelledby="winHeading">
               <div class="screen-inner">
                 <p class="eyebrow" id="winEyebrow">关卡 01 / 处置完成</p>
-                <h2 class="screen-title" id="winHeading">路段清理完毕</h2>
-                <p class="screen-lead">全部波次的障碍都清掉了，车道重新放行。</p>
+                <h2 class="screen-title" id="winHeading">路段已清空</h2>
+                <p class="screen-lead" id="winLead">全部波次的丧尸都清掉了，车道重新放行。</p>
                 <div class="tally">
                   <div><label>完成波次</label><b id="winClear">0 / 0</b></div>
-                  <div><label>清理障碍</label><b id="winCleared">0</b></div>
+                  <div><label>清理丧尸</label><b id="winCleared">0</b></div>
                   <div><label>剩余预算</label><b id="winMoney">0</b></div>
                   <div><label>用时</label><b id="winTime">0:00</b></div>
                 </div>
@@ -842,11 +1023,11 @@ canvas#board {
             <div class="screen" data-screen="lose" role="dialog" aria-modal="true" aria-labelledby="loseHeading">
               <div class="screen-inner">
                 <p class="eyebrow" id="loseEyebrow">关卡 01 / 中断</p>
-                <h2 class="screen-title" id="loseHeading">通行受阻</h2>
-                <p class="screen-lead">障碍冲进了收费站。这条路段被临时封闭，塔位记录清空，本关进度会保留。</p>
+                <h2 class="screen-title" id="loseHeading">收费站失守</h2>
+                <p class="screen-lead" id="loseLead">尸群冲进了收费站。这条路段被临时封闭，塔位记录清空，本关进度会保留。</p>
                 <div class="tally">
                   <div><label>撑到波次</label><b id="loseWave">第 0 波</b></div>
-                  <div><label>清理障碍</label><b id="loseCleared">0</b></div>
+                  <div><label>清理丧尸</label><b id="loseCleared">0</b></div>
                   <div><label>本关最好</label><b id="loseBest">第 0 波</b></div>
                   <div><label>用时</label><b id="loseTime">0:00</b></div>
                 </div>
@@ -856,6 +1037,11 @@ canvas#board {
                 </div>
               </div>
             </div>
+          </div>
+          <div class="coach" id="coach" hidden>
+            <span class="coach-step" id="coachStep">引导 1 / 4</span>
+            <p class="coach-text" id="coachText"></p>
+            <span class="coach-hint" id="coachHint"></span>
           </div>
         </div>
         <div class="board-foot">
@@ -916,6 +1102,7 @@ canvas#board {
             <button class="btn-ghost" id="btnSound" aria-pressed="true" aria-label="开关音效">声音 开</button>
           </div>
           <button class="btn-ghost btn-wide" id="btnSell" hidden>拆除选中塔 · 回收 <b id="sellRefund">0</b></button>
+          <button class="btn-ghost btn-wide" id="btnRepair" hidden>请人抢修 · <b id="repairCost">25</b></button>
         </section>
 
         <section class="panel-block panel-block--quiet">
@@ -924,9 +1111,29 @@ canvas#board {
             <div><label>最远波次</label><b id="hudBest">第 0 波</b></div>
             <div><label>塔位</label><b id="hudTowers">0</b></div>
           </div>
-          <p class="note">障碍滚到右侧收费站即算漏过，水泥块一次扣 2 点通行。手机端第一次点空地只是预览，同一格再点一次才架设；点已有的塔后可用下方「拆除」按钮回收预算，没有键盘时用「暂停」按钮。</p>
+          <p class="note">丧尸冲到右侧收费站即算漏过，巨尸一次扣 2 点通行。手机端第一次点空地只是预览，同一格再点一次才架设；点已有的塔可用「拆除」回收预算，塔被落石砸坏时用「请人抢修」花 25 修好。没有键盘时用「暂停」按钮。</p>
         </section>
       </aside>
+    </div>
+  </div>
+</div>
+
+<div class="story" id="story" role="dialog" aria-modal="true" aria-labelledby="storyWho" hidden>
+  <div class="story-card" id="storyCard">
+    <div class="story-portrait">
+      <canvas id="portrait" width="264" height="320" aria-hidden="true"></canvas>
+      <i aria-hidden="true"></i>
+    </div>
+    <div class="story-body">
+      <p class="story-who" id="storyWho">周维山 · 老博士</p>
+      <p class="story-text" id="storyText"></p>
+      <div class="story-foot">
+        <span class="story-index" id="storyIndex">1 / 1</span>
+        <div class="btn-row">
+          <button class="btn-ghost" id="btnStorySkip" type="button">跳过</button>
+          <button class="btn-solid" id="btnStoryNext" type="button">继续</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -967,70 +1174,70 @@ canvas#board {
       no: 1, name: '路肩起步', tag: '教学', stars: 1, waves: 4,
       money: 320, lives: 25, hpStep: 0.12, density: 0.8, bonus: [22, 4],
       from: { tire: 3, barrel: 9, concrete: 9 },
-      lead: '一条直角双弯，路肩空得很。先熟悉怎么把塔摆在路边。',
+      lead: '一条直角双弯，路肩空得很。老博士在电台里教你把第一盏灯点起来。',
       waypoints: [[-1.5, 3.5], [9.5, 3.5], [9.5, 9.5], [21.5, 9.5]]
     },
     {
       no: 2, name: '双弯夹道', tag: '普通', stars: 7, waves: 10,
       money: 260, lives: 12, hpStep: 0.9, density: 1.25, bonus: [14, 3], speed: 1.12,
       from: { tire: 1, barrel: 2, concrete: 4 },
-      lead: '教学关之后直接跳到全游戏最难的一档：第 1 波就上废轮胎，第 4 波起水泥块，血量一波比一波厚。',
+      lead: '双弯夹道：第 1 波就有爬尸，第 4 波起巨尸，血量一波比一波厚。',
       waypoints: [[-1.5, 1.5], [3.5, 1.5], [3.5, 5.5], [9.5, 5.5], [9.5, 1.5], [14.5, 1.5], [14.5, 9.5], [21.5, 9.5]]
     },
     {
       no: 3, name: '回形走廊', tag: '普通', stars: 1, waves: 4,
       money: 380, lives: 26, hpStep: 0.2, density: 0.9, bonus: [20, 4], speed: 1.0,
       from: { tire: 3, barrel: 9, concrete: 9 },
-      lead: '难度突然放水的一关：只有碎石和少量废轮胎，塔位充足，随便摆都能过。',
+      lead: '回形走廊：绕得远，尸群只能慢慢挤，塔位充足，趁这关把预算攒厚。',
       waypoints: [[-1.5, 2.5], [12.5, 2.5], [12.5, 6.5], [4.5, 6.5], [4.5, 10.5], [21.5, 10.5]]
     },
     {
       no: 4, name: '之字坡道', tag: '普通', stars: 7, waves: 10,
       money: 265, lives: 14, hpStep: 1.15, density: 1.35, bonus: [14, 3], speed: 1.22,
       from: { tire: 1, barrel: 2, concrete: 4 },
-      lead: '刚放完水又翻回来：拐角更多、血量台阶更陡，和上一关的轻松完全不是一件事。',
+      lead: '之字坡道：拐角更多、血量台阶更陡，巨尸第一次成群出现。',
       waypoints: [[-1.5, 4.5], [7.5, 4.5], [7.5, 1.5], [15.5, 1.5], [15.5, 7.5], [3.5, 7.5], [3.5, 11.5], [21.5, 11.5]]
     },
     {
       no: 5, name: '折返长坡', tag: '普通', stars: 4, waves: 11,
       money: 200, lives: 13, hpStep: 0.66, density: 1.26, bonus: [13, 3], speed: 1.20,
       from: { tire: 1, barrel: 2, concrete: 4 },
-      lead: '从底部长驱直入，一路向上折返，后半段留给塔的空地越来越窄。',
+      lead: '折返长坡：从底部长驱直入，一路向上折返，后半段留给塔的空地越来越窄。',
       waypoints: [[-1.5, 10.5], [10.5, 10.5], [10.5, 6.5], [3.5, 6.5], [3.5, 1.5], [17.5, 1.5], [17.5, 8.5], [21.5, 8.5]]
     },
     {
       no: 6, name: '窄道双桥', tag: '高难度', stars: 5, waves: 11,
       money: 195, lives: 12, hpStep: 0.68, density: 1.28, bonus: [13, 3], speed: 1.24,
       from: { tire: 1, barrel: 2, concrete: 4 },
-      lead: '三条长横道把路肩切成细条，塔位零碎，得挑最划算的位置。',
+      lead: '窄道双桥：两段桥把塔位切成细条，摆歪一格就白费火力。',
       waypoints: [[-1.5, 1.5], [6.5, 1.5], [6.5, 4.5], [18.5, 4.5], [18.5, 7.5], [3.5, 7.5], [3.5, 10.5], [21.5, 10.5]]
     },
     {
       no: 7, name: '蛇形长廊', tag: '高难度', stars: 6, waves: 12,
       money: 190, lives: 12, hpStep: 0.70, density: 1.30, bonus: [12, 3], speed: 1.28,
       from: { tire: 1, barrel: 2, concrete: 3 },
-      lead: '车道像蛇一样来回四趟，路程长但塔能覆盖的地段被切得很散。',
+      lead: '蛇形长廊：头顶就是塌方最勤的山脊，落石会砸塔，砸坏得花 25 抢修。',
       waypoints: [[-1.5, 1.5], [9.5, 1.5], [9.5, 4.5], [2.5, 4.5], [2.5, 7.5], [16.5, 7.5], [16.5, 10.5], [21.5, 10.5]]
     },
     {
       no: 8, name: '之字密道', tag: '高难度', stars: 7, waves: 12,
       money: 190, lives: 11, hpStep: 0.72, density: 1.31, bonus: [12, 3], speed: 1.32,
       from: { tire: 1, barrel: 2, concrete: 3 },
-      lead: '六段横道挤在一起，只剩一条条窄缝能立塔，选位比数量重要。',
+      lead: '之字密道：六段横道挤在一起，尸群几乎贴脸冲过来，选位比数量重要。',
       waypoints: [[-1.5, 0.5], [15.5, 0.5], [15.5, 2.5], [3.5, 2.5], [3.5, 4.5], [17.5, 4.5], [17.5, 6.5], [2.5, 6.5], [2.5, 8.5], [18.5, 8.5], [18.5, 11.5], [21.5, 11.5]]
     },
     {
       no: 9, name: '交错长街', tag: '后很难', stars: 8, waves: 12,
       money: 195, lives: 10, hpStep: 0.70, density: 1.28, bonus: [11, 3], speed: 1.36,
       from: { tire: 1, barrel: 2, concrete: 3 },
-      lead: '整张路肩被车道反复割穿，能同时看住两条横道的塔位是稀缺资源。',
+      lead: '交错长街：当年撤离的队伍在这里断了线，这一次要守到底。',
       waypoints: [[-1.5, 0.5], [8.5, 0.5], [8.5, 3.5], [18.5, 3.5], [18.5, 6.5], [2.5, 6.5], [2.5, 9.5], [14.5, 9.5], [14.5, 11.5], [21.5, 11.5]]
     },
     {
       no: 10, name: '终局回路', tag: '特难', stars: 10, waves: 12,
       money: 195, lives: 9, hpStep: 1.0, density: 1.40, bonus: [10, 3], speed: 1.54,
       from: { tire: 1, barrel: 1, concrete: 2 },
-      lead: '七段横道、血最厚、预算最紧。能过这一关，就算把这条路上的一切都学会了。',
+      lead: '终局回路：走完这一圈就是收费站。天亮前，别让灯灭。',
       waypoints: [[-1.5, 0.5], [17.5, 0.5], [17.5, 2.5], [2.5, 2.5], [2.5, 4.5], [19.5, 4.5], [19.5, 6.5], [1.5, 6.5], [1.5, 8.5], [16.5, 8.5], [16.5, 10.5], [3.5, 10.5], [3.5, 11.5], [21.5, 11.5]]
     }
   ];
@@ -1040,12 +1247,17 @@ canvas#board {
     2: { key: 2, label: '水炮桩', cost: 110, range: 152, dmg: 30, interval: 1.05, shotSpeed: 240, splash: 52, slowF: 0.6, slowDur: 1.8 }
   };
 
+  /* 丧尸四型：游尸最普通，爬尸慢而耐打，奔尸快，巨尸血厚、漏过扣两点通行 */
   var ENEMY_SPECS = {
-    gravel: { label: '碎石堆', hp: 28, speed: 64, reward: 5, leak: 1, size: 9 },
-    tire: { label: '废轮胎', hp: 74, speed: 50, reward: 8, leak: 1, size: 12 },
-    barrel: { label: '快滚桶', hp: 60, speed: 86, reward: 9, leak: 1, size: 11 },
-    concrete: { label: '水泥块', hp: 180, speed: 34, reward: 14, leak: 2, size: 15 }
+    gravel: { label: '游尸', hp: 28, speed: 64, reward: 5, leak: 1, size: 12 },
+    tire: { label: '爬尸', hp: 74, speed: 50, reward: 8, leak: 1, size: 15 },
+    barrel: { label: '奔尸', hp: 60, speed: 86, reward: 9, leak: 1, size: 13 },
+    concrete: { label: '巨尸', hp: 180, speed: 34, reward: 14, leak: 2, size: 19 }
   };
+
+  /* 落石砸坏的塔要花预算请人抢修；山体落石的间隔按关卡递增 */
+  var REPAIR_COST = 25;
+  var ROCK_GAP = [0, 16, 9.5, 9.5, 8.5, 8, 7.5, 7, 6.5, 6, 5.5];
 
   var canvas = document.getElementById('board');
   /* 底图铺满整块画布，关掉 alpha 可以省掉每帧的透明混合 */
@@ -1206,6 +1418,14 @@ canvas#board {
     state.toastT = 0;
     state.toastW = 0;
     state.leakFx = 0;
+    state.rocks = [];
+    state.rockAt = 0;
+    state.shake = 0;
+    state.tutor = false;
+    state.tutStep = 0;
+    state.tutT = 0;
+    state.cue = [];
+    state.soldTowers = 0;
   }
 
   /* =========================================================
@@ -1299,6 +1519,7 @@ canvas#board {
       }
     }
 
+    drawMountain(c);
     drawRoadSurface(c);
     drawRoadProps(c);
 
@@ -1402,7 +1623,7 @@ canvas#board {
     c.fillStyle = 'rgba(32,36,42,0.55)';
     c.font = '500 8px "IBM Plex Mono", monospace';
     c.textAlign = 'center';
-    c.fillText('TOLL', 0, -44);
+    c.fillText('SAFE', 0, -44);
     c.restore();
   }
 
@@ -1694,6 +1915,8 @@ canvas#board {
       tone(type === 1 ? 900 : 620, 0.05, 'triangle', 0.018, type === 1 ? 700 : 470);
     },
     leak: function () { tone(150, 0.32, 'sawtooth', 0.07, 92); },
+    rock: function () { tone(96, 0.36, 'sawtooth', 0.035, 58); },
+    crack: function () { tone(210, 0.18, 'square', 0.05, 80); },
     wave: function () { chords([392, 523], 'triangle', 0.05, 140); },
     win: function () { chords([523, 659, 784, 1046], 'triangle', 0.055, 160); },
     lose: function () { chords([330, 262, 196], 'sawtooth', 0.05, 210); }
@@ -1766,9 +1989,14 @@ canvas#board {
       return;
     }
 
+    updateRocks(dt);
+    updateTutor(dt);
+
     for (var j = 0; j < state.towers.length; j++) {
       var t = state.towers[j];
       if (t.flash > 0) t.flash -= dt;
+      /* 被落石砸坏的塔停火，等玩家花 25 抢修 */
+      if (t.broken) continue;
       t.cool -= dt;
       if (t.cool > 0) continue;
       var target = pickTarget(t);
@@ -1882,11 +2110,20 @@ canvas#board {
     /* 底图和设备像素 1:1 贴回，省掉每帧一次缩放重采样；它不透明且铺满，无需 clearRect */
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(bg, 0, 0);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var shx = 0, shy = 0;
+    if (state.shake > 0) {
+      /* 落石砸地时的短促震屏，只在世界层偏移，底图不动 */
+      var k = state.shake / 0.42;
+      shx = (Math.random() - 0.5) * 7 * k;
+      shy = (Math.random() - 0.5) * 5 * k;
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, shx * dpr, shy * dpr);
     drawRange();
     drawGhost();
+    drawTutorCue();
     drawTowers();
     drawEnemies();
+    drawRocks();
     drawShots();
     drawParticles();
     drawEffects();
@@ -1949,7 +2186,74 @@ canvas#board {
   }
 
   function drawTowers() {
-    for (var i = 0; i < state.towers.length; i++) drawTower(state.towers[i]);
+    for (var i = 0; i < state.towers.length; i++) {
+      if (state.towers[i].broken) drawBrokenTower(state.towers[i]);
+      else drawTower(state.towers[i]);
+    }
+  }
+
+  /* 被落石砸坏的塔：杆子歪掉、灯灭、脚下一堆碎石，顶上挂个待修标记 */
+  function drawBrokenTower(t) {
+    var lean = (t.seed > 0.5 ? 1 : -1) * 0.5;
+    ctx.save();
+    ctx.translate(t.x, t.y);
+
+    if (towerBase) {
+      ctx.globalAlpha = 0.9;
+      ctx.drawImage(towerBase, -22, -22, 44, 44);
+      ctx.globalAlpha = 1;
+    }
+
+    ctx.save();
+    ctx.translate(0, 3);
+    ctx.rotate(lean);
+    if (t.type === 1) {
+      ctx.fillStyle = '#3a3d42';
+      ctx.fillRect(-2.6, -16, 5.2, 19);
+      ctx.fillStyle = '#6b6e72';
+      ctx.fillRect(-5.5, -20, 11, 5);
+      ctx.strokeStyle = 'rgba(20,22,24,0.5)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(-2, -16); ctx.lineTo(3, -6);
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = '#6b6e72';
+      ctx.beginPath();
+      ctx.arc(0, -8, 7.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(32,36,42,0.55)';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(-6, -12); ctx.lineTo(5, -3);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    /* 碎石与灰尘 */
+    ctx.fillStyle = '#8a8478';
+    ctx.beginPath();
+    ctx.arc(-11, 9, 3.2, 0, Math.PI * 2);
+    ctx.arc(9, 11, 2.6, 0, Math.PI * 2);
+    ctx.arc(2, 13, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    var dust = 0.35 + Math.sin(state.time * 2.4 + t.seed * 6.28) * 0.12;
+    ctx.fillStyle = 'rgba(150,140,120,' + dust + ')';
+    ctx.beginPath();
+    ctx.arc(-4, -4, 7 + dust * 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    /* 待修标签贴在塔基下沿，比在塔顶挂一个看不清的小字更直接 */
+    ctx.fillStyle = 'rgba(24,26,30,0.82)';
+    ctx.fillRect(-20, 17, 40, 11);
+    ctx.fillStyle = '#e9a338';
+    ctx.font = '700 8px "IBM Plex Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('待修 ' + REPAIR_COST, 0, 23);
+
+    ctx.restore();
   }
 
   function drawTower(t) {
@@ -2043,105 +2347,188 @@ canvas#board {
     for (var i = 0; i < state.enemies.length; i++) drawEnemy(state.enemies[i]);
   }
 
+  /* 丧尸统一按「正面立像」画：脚底为原点，向上长高，走动带一点左右摇摆 */
   function drawEnemy(e) {
-    /* size 是绘制基准半径：生成时从怪物规格拷入，缺失会让整只怪画成 NaN 尺寸而不可见 */
     var r = e.size || e.spec.size;
+    var big = e.type === 'concrete';
+    var crawl = e.type === 'tire';
+    var runner = e.type === 'barrel';
+    var h = r * (big ? 2.55 : crawl ? 1.75 : runner ? 2.6 : 2.35);
+    var w = r * (big ? 1.75 : 1.4);
+    var walk = Math.sin(e.dist / (crawl ? 13 : 8) + e.seed * 6.283);
+
     ctx.save();
     ctx.translate(e.x, e.y);
 
-    ctx.fillStyle = 'rgba(30,34,40,0.22)';
+    /* 落地阴影 */
+    ctx.fillStyle = 'rgba(28,32,36,0.26)';
     ctx.beginPath();
-    ctx.ellipse(2, 3, r * 0.95, r * 0.7, 0, 0, Math.PI * 2);
+    ctx.ellipse(1, r * 0.55, r * 0.95, r * 0.42, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    var rot = e.dist / (r * 1.9);
+    ctx.save();
+    ctx.rotate(walk * (runner ? 0.08 : 0.03));
+    ctx.translate(0, r * 0.55);
 
-    if (e.type === 'tire') {
-      ctx.save();
-      ctx.rotate(rot);
-      ctx.strokeStyle = '#2b2e34';
-      ctx.lineWidth = 5;
+    var hipY = -h * 0.45;
+
+    /* 双腿：交替迈步 */
+    ctx.strokeStyle = big ? '#2f322e' : '#3d3a36';
+    ctx.lineWidth = Math.max(2, r * 0.38);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-w * 0.17, hipY);
+    ctx.lineTo(-w * 0.24 + walk * 2.2, 0);
+    ctx.moveTo(w * 0.17, hipY);
+    ctx.lineTo(w * 0.24 - walk * 2.2, 0);
+    ctx.stroke();
+
+    /* 破烂上衣 */
+    ctx.fillStyle = big ? '#4a4c42' : crawl ? '#545a46' : '#5c6650';
+    ctx.beginPath();
+    ctx.moveTo(-w * 0.52, hipY);
+    ctx.lineTo(-w * 0.46, -h * 0.86);
+    ctx.lineTo(-w * 0.16, -h * 0.95);
+    ctx.lineTo(w * 0.14, -h * 0.9);
+    ctx.lineTo(w * 0.5, -h * 0.82);
+    ctx.lineTo(w * 0.44, hipY);
+    ctx.closePath();
+    ctx.fill();
+
+    /* 衣摆撕裂 */
+    ctx.fillStyle = 'rgba(26,30,26,0.5)';
+    for (var i = 0; i < 3; i++) {
+      var tx = -w * 0.42 + i * w * 0.34;
       ctx.beginPath();
-      ctx.arc(0, 0, r - 2.5, 0, Math.PI * 2);
+      ctx.moveTo(tx, hipY);
+      ctx.lineTo(tx + w * 0.16, hipY);
+      ctx.lineTo(tx + w * 0.06, hipY - h * 0.13);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    /* 血迹 */
+    ctx.fillStyle = 'rgba(104,30,26,0.45)';
+    ctx.beginPath();
+    ctx.ellipse(w * 0.1, -h * 0.66, w * 0.2, h * 0.12, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+
+    /* 双臂前伸 */
+    ctx.strokeStyle = big ? '#7f8f6a' : '#8b9a76';
+    ctx.lineWidth = Math.max(2, r * 0.3);
+    ctx.beginPath();
+    ctx.moveTo(-w * 0.44, -h * 0.8);
+    ctx.lineTo(-w * 0.84, -h * 0.56 + walk * 2);
+    ctx.moveTo(w * 0.44, -h * 0.8);
+    ctx.lineTo(w * 0.88, -h * 0.6 - walk * 2);
+    ctx.stroke();
+    ctx.fillStyle = '#8b9a76';
+    ctx.beginPath();
+    ctx.arc(-w * 0.84, -h * 0.56 + walk * 2, r * 0.22, 0, Math.PI * 2);
+    ctx.arc(w * 0.88, -h * 0.6 - walk * 2, r * 0.22, 0, Math.PI * 2);
+    ctx.fill();
+
+    /* 头 */
+    var hy = -h * 1.0;
+    var hr = r * 0.52;
+    ctx.fillStyle = big ? '#8a9a74' : '#93a17c';
+    ctx.beginPath();
+    ctx.ellipse(0, hy, hr, hr * 1.08, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(56,68,46,0.32)';
+    ctx.beginPath();
+    ctx.ellipse(0, hy + hr * 0.5, hr * 0.74, hr * 0.42, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    /* 斑驳短发：一层深色帽状，再挑两撮乱发 */
+    ctx.fillStyle = 'rgba(36,40,32,0.72)';
+    ctx.beginPath();
+    ctx.ellipse(0, hy - hr * 0.42, hr * 0.92, hr * 0.5, 0, Math.PI, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(36,40,32,0.72)';
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+    ctx.moveTo(-hr * 0.55, hy - hr * 0.85);
+    ctx.lineTo(-hr * 0.8, hy - hr * 1.15);
+    ctx.moveTo(hr * 0.5, hy - hr * 0.9);
+    ctx.lineTo(hr * 0.72, hy - hr * 1.18);
+    ctx.stroke();
+
+    /* 眼窝与两点幽光 */
+    ctx.fillStyle = '#1b2018';
+    ctx.beginPath();
+    ctx.arc(-hr * 0.34, hy - hr * 0.08, hr * 0.21, 0, Math.PI * 2);
+    ctx.arc(hr * 0.34, hy - hr * 0.08, hr * 0.21, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = big ? 'rgba(212,84,44,0.9)' : 'rgba(233,163,56,0.85)';
+    ctx.beginPath();
+    ctx.arc(-hr * 0.34, hy - hr * 0.08, hr * 0.09, 0, Math.PI * 2);
+    ctx.arc(hr * 0.34, hy - hr * 0.08, hr * 0.09, 0, Math.PI * 2);
+    ctx.fill();
+
+    /* 嘴与獠牙 */
+    ctx.strokeStyle = '#2a211c';
+    ctx.lineWidth = Math.max(1, r * 0.12);
+    ctx.beginPath();
+    ctx.moveTo(-hr * 0.34, hy + hr * 0.44);
+    ctx.lineTo(hr * 0.32, hy + hr * 0.44);
+    ctx.stroke();
+    ctx.fillStyle = '#efeade';
+    ctx.beginPath();
+    ctx.moveTo(-hr * 0.18, hy + hr * 0.44);
+    ctx.lineTo(-hr * 0.1, hy + hr * 0.7);
+    ctx.lineTo(-hr * 0.02, hy + hr * 0.44);
+    ctx.closePath();
+    ctx.fill();
+
+    /* 巨尸加一道旧伤和一枚路障反光条，一眼能认出来 */
+    if (big) {
+      ctx.strokeStyle = 'rgba(60,44,36,0.6)';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(hr * 0.1, hy - hr * 0.7);
+      ctx.lineTo(hr * 0.5, hy + hr * 0.3);
       ctx.stroke();
-      ctx.strokeStyle = 'rgba(235,230,216,0.32)';
-      ctx.lineWidth = 1.6;
-      for (var i = 0; i < 10; i++) {
-        var ang = i / 10 * Math.PI * 2;
-        ctx.beginPath();
-        ctx.moveTo(Math.cos(ang) * (r - 6), Math.sin(ang) * (r - 6));
-        ctx.lineTo(Math.cos(ang) * (r - 1), Math.sin(ang) * (r - 1));
-        ctx.stroke();
-      }
-      ctx.restore();
-    } else if (e.type === 'barrel') {
-      ctx.save();
-      ctx.rotate(rot);
-      rrect(ctx, -r, -r * 0.72, r * 2, r * 1.44, 4);
-      ctx.fillStyle = '#d4542c';
-      ctx.fill();
-      ctx.fillStyle = '#efeade';
-      ctx.fillRect(-r + 2, -r * 0.24, r * 2 - 4, 3);
-      ctx.fillRect(-r + 2, r * 0.14, r * 2 - 4, 3);
-      ctx.restore();
-    } else if (e.type === 'concrete') {
-      ctx.save();
-      ctx.rotate(rot * 0.7);
-      rrect(ctx, -r, -r, r * 2, r * 2, 3);
-      ctx.fillStyle = '#9d9a92';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(60,62,66,0.45)';
-      ctx.lineWidth = 1;
-      for (var j = -r + 4; j < r; j += 5) {
-        ctx.beginPath();
-        ctx.moveTo(j, -r + 2);
-        ctx.lineTo(j + 3, r - 2);
-        ctx.stroke();
-      }
-      ctx.restore();
-    } else {
-      ctx.save();
-      ctx.rotate(-rot * 1.1);
-      for (var n = 0; n < 5; n++) {
-        var a2 = n / 5 * Math.PI * 2 + e.seed * 3;
-        var px = Math.cos(a2) * r * 0.45;
-        var py = Math.sin(a2) * r * 0.45;
-        var s2 = r * 0.5;
-        ctx.beginPath();
-        ctx.moveTo(px - s2 * 0.8, py);
-        ctx.lineTo(px - s2 * 0.2, py - s2 * 0.9);
-        ctx.lineTo(px + s2 * 0.7, py - s2 * 0.3);
-        ctx.lineTo(px + s2 * 0.4, py + s2 * 0.7);
-        ctx.closePath();
-        ctx.fillStyle = '#8a8478';
-        ctx.fill();
-      }
-      ctx.restore();
+      ctx.fillStyle = 'rgba(233,163,56,0.85)';
+      ctx.fillRect(-w * 0.3, hipY - h * 0.06, w * 0.6, 2.4);
+    }
+
+    /* 奔尸的拖影，强调速度 */
+    if (runner) {
+      ctx.strokeStyle = 'rgba(120,110,96,0.22)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-w * 0.7, -h * 0.7);
+      ctx.lineTo(-w * 1.1, -h * 0.52);
+      ctx.moveTo(-w * 0.7, -h * 0.4);
+      ctx.lineTo(-w * 1.15, -h * 0.28);
+      ctx.stroke();
     }
 
     if (e.slowT > 0) {
       ctx.strokeStyle = 'rgba(74,141,156,0.75)';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(0, 0, r + 3, 0, Math.PI * 2);
+      ctx.arc(0, -h * 0.5, Math.max(r * 0.9, w * 0.7), 0, Math.PI * 2);
       ctx.stroke();
     }
 
     if (e.flash > 0) {
-      ctx.fillStyle = 'rgba(255,250,236,' + (e.flash / 0.13 * 0.5) + ')';
+      ctx.fillStyle = 'rgba(255,250,236,' + (e.flash / 0.13 * 0.42) + ')';
       ctx.beginPath();
-      ctx.arc(0, 0, r + 1, 0, Math.PI * 2);
+      ctx.ellipse(0, -h * 0.55, w * 0.75, h * 0.6, 0, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    var hpW = 26;
+    var hpW = Math.max(20, r * 1.9);
     var ratio = Math.max(0, e.hp / e.maxHp);
-    var by = -r - 9;
+    var by = hy - hr * 1.2 - 3;
     ctx.fillStyle = 'rgba(32,36,42,0.6)';
     ctx.fillRect(-hpW / 2, by, hpW, 3);
     ctx.fillStyle = ratio > 0.35 ? '#2f6b52' : '#d4542c';
     ctx.fillRect(-hpW / 2, by, hpW * ratio, 3);
 
+    ctx.restore();
     ctx.restore();
   }
 
@@ -2264,11 +2651,6 @@ canvas#board {
     sfx.build();
     toast('已架设 ' + spec.label + ' · 预算 -' + spec.cost);
     syncHud();
-    /* 第一关顺手把三件事讲完，不额外占版面 */
-    if (LV.no === 1) {
-      if (state.towers.length === 1) toast('教学 · 按 1 / 2 换塔型，拐角放水炮桩更好用');
-      else if (state.towers.length === 3) toast('教学 · 右键点塔可以拆掉，回收七成预算');
-    }
   }
 
   function sellTower(t) {
@@ -2276,6 +2658,7 @@ canvas#board {
     var at = state.towers.indexOf(t);
     if (at === -1) return;
     state.money += refund;
+    state.soldTowers += 1;
     /* 原地删除，不再整体重建数组（换掉 filter 产生的垃圾对象） */
     state.towers.splice(at, 1);
     towerMap.delete(cellKey(t.c, t.r));
@@ -2319,6 +2702,8 @@ canvas#board {
     btnSound: document.getElementById('btnSound'),
     btnSell: document.getElementById('btnSell'),
     sellRefund: document.getElementById('sellRefund'),
+    btnRepair: document.getElementById('btnRepair'),
+    repairCost: document.getElementById('repairCost'),
     cardT1: document.getElementById('cardT1'),
     cardT2: document.getElementById('cardT2')
   };
@@ -2334,6 +2719,7 @@ canvas#board {
 
   function statusText() {
     if (state.mode === 'menu') return '待开始';
+    if (state.mode === 'story') return '剧情简报';
     if (state.mode === 'paused') return '已暂停';
     if (state.mode === 'win') return '路段已清理';
     if (state.mode === 'lose') return '通行受阻';
@@ -2361,7 +2747,7 @@ canvas#board {
     var nextWave = state.wave + 1;
     var nextCount = nextWave <= TOTAL_WAVES ? waveSize(nextWave) : 0;
     var nextText = nextWave > TOTAL_WAVES ? '结束' : nextCount + ' 个';
-    var inspectKey = state.inspect ? state.inspect.c + ',' + state.inspect.r : '-';
+    var inspectKey = state.inspect ? state.inspect.c + ',' + state.inspect.r + ',' + (state.inspect.broken ? 1 : 0) : '-';
     var sig = [state.wave, state.lives, state.money, state.cleared, status, remain, cd,
       state.towers.length, state.waveActive, state.mode, state.selected, inspectKey, nextText,
       Math.floor(state.runTime)].join('|');
@@ -2387,11 +2773,19 @@ canvas#board {
     el.btnPause.disabled = state.mode !== 'playing' && state.mode !== 'paused';
 
     var held = state.inspect;
-    if (held && state.towers.indexOf(held) !== -1) {
+    var holdValid = held && state.towers.indexOf(held) !== -1;
+    if (holdValid) {
       el.btnSell.hidden = false;
       el.sellRefund.textContent = String(Math.round(TOWER_SPECS[held.type].cost * SELL_RATE));
+      /* 塔被落石砸坏时给一个抢修入口，触屏也能点 */
+      el.btnRepair.hidden = !held.broken;
+      el.btnRepair.disabled = state.money < REPAIR_COST;
+      el.btnRepair.setAttribute('aria-label', held.broken
+        ? '请人抢修这座塔，需要预算 ' + REPAIR_COST
+        : '抢修这座塔');
     } else {
       el.btnSell.hidden = true;
+      el.btnRepair.hidden = true;
     }
 
     el.cardT1.classList.toggle('is-on', state.selected === 1);
@@ -2537,10 +2931,28 @@ canvas#board {
     showScreen(null);
     syncLevelLabels();
     stopLoop();
-    startLoop();
     render();
-    if (LV.no === 1) toast('教学 · 点路肩空地架第一座塔，悬停能看落点与射程');
-    else if (LV.no === 2) toast('恶魔模式 · 车道很短，第二波就有快滚桶');
+    /* 每关的简报只在本次会话里播一次：点卡片进关会播，R 重开不打断 */
+    var lines = storySeen[LV.no] ? null : storyNodes(LV.no);
+    if (lines) {
+      storySeen[LV.no] = true;
+      openStory(lines, startPlay);
+    } else {
+      startPlay();
+    }
+  }
+
+  function startPlay() {
+    if (state.mode !== 'playing') return;
+    startLoop();
+    if (LV.no === 1 && !tutorialDone) {
+      state.tutor = true;
+      state.tutStep = 0;
+      state.tutT = 0;
+      showCoach();
+      buildCue();
+    }
+    if (LV.no === 2) toast('双弯夹道 · 第 1 波就有爬尸，先摆灯塔');
   }
 
   function pauseGame() {
@@ -2583,6 +2995,8 @@ canvas#board {
     document.getElementById('loseCleared').textContent = String(state.cleared);
     document.getElementById('loseBest').textContent = bestLabel(levelBest(LV.no));
     document.getElementById('loseTime').textContent = formatTime(state.runTime);
+    var loseLead = document.getElementById('loseLead');
+    if (loseLead) loseLead.textContent = STORY.fail;
     showScreen('lose');
     sfx.lose();
   }
@@ -2599,6 +3013,8 @@ canvas#board {
     document.getElementById('winCleared').textContent = String(state.cleared);
     document.getElementById('winMoney').textContent = String(state.money);
     document.getElementById('winTime').textContent = formatTime(state.runTime);
+    var winLead = document.getElementById('winLead');
+    if (winLead) winLead.textContent = STORY.clears[LV.no] || '这一段的丧尸都清掉了，车道重新放行。';
 
     var next = LEVELS[LV.no];
     var btnNext = document.getElementById('btnNextWin');
@@ -2610,10 +3026,15 @@ canvas#board {
     } else {
       btnNext.disabled = true;
       btnNext.textContent = '十关全部通关';
-      unlockText.textContent = '全部路段清理完毕，这条路上的障碍再也不用怕了。';
+      unlockText.textContent = '全部路段清理完毕。老博士合上记录本：灯留着，路就还在。';
     }
     showScreen('win');
     sfx.win();
+    /* 十关通关后补一段收尾剧情，只播一次 */
+    if (!next && !storySeen.ending) {
+      storySeen.ending = true;
+      openStory(STORY.ending, null);
+    }
   }
 
   function formatTime(sec) {
@@ -2636,6 +3057,752 @@ canvas#board {
   function setSelected(n) {
     state.selected = n;
     syncHud();
+  }
+
+  /* =========================================================
+     末日剧情：撤离走廊与老博士
+     剧情只在本次会话里每关播一次，重开用 R 不会反复打断
+     ========================================================= */
+
+  var STORY = {
+    prologue: [
+      { who: '周维山 · 老博士', text: '2027 年秋天，城市安静得只剩风声。' },
+      { who: '周维山 · 老博士', text: '我是周维山，生物所的。丧尸潮过去三年，我在这条废弃公路上守着几盏灯。' },
+      { who: '你', text: '我把路肩的警示灯重新接上了电，一直亮到收费站。' },
+      { who: '周维山 · 老博士', text: '那就别让它们灭。灯亮着，活人就知道这条路上还能走。' },
+      { who: '周维山 · 老博士', text: '南边那座山塌了半边，碎石时不时往下滚。塔被砸坏，花 25 请养护队的老赵上来抢修。' }
+    ],
+    levels: {
+      1: [
+        { who: '周维山 · 老博士', text: '先从路肩起步。红光那盏是警示灯塔，专打单个目标；蓝的是水炮桩，溅射还带减速。' },
+        { who: '你', text: '这条路我熟。灯点起来，尸群就过不去。' }
+      ],
+      2: [
+        { who: '周维山 · 老博士', text: '双弯夹道，尸群从两个弯口一起压上来。第 1 波就有爬尸，别拿它当游尸打。' },
+        { who: '周维山 · 老博士', text: '先灯塔再水炮，弯道内侧最值钱。' }
+      ],
+      3: [
+        { who: '周维山 · 老博士', text: '回形走廊绕得远，尸群反而好打。趁这一关把预算攒厚。' }
+      ],
+      4: [
+        { who: '周维山 · 老博士', text: '之字坡道，血厚的巨尸第一次出现，两只就能顶穿一排灯塔。' },
+        { who: '周维山 · 老博士', text: '顶不住就拆了重摆，回收七成，别硬撑。' }
+      ],
+      5: [
+        { who: '周维山 · 老博士', text: '折返长坡，后半段空地越来越窄。塔位比数量要紧。' }
+      ],
+      6: [
+        { who: '周维山 · 老博士', text: '窄道双桥，两段桥把塔位切成细条。摆歪一格，火力就白费。' }
+      ],
+      7: [
+        { who: '周维山 · 老博士', text: '蛇形长廊。头顶就是塌得最狠的那段山脊，落石会砸塔，砸坏就花 25 修。' }
+      ],
+      8: [
+        { who: '周维山 · 老博士', text: '之字密道，六段横道挤在一起，尸群能贴着脸冲过来。' }
+      ],
+      9: [
+        { who: '周维山 · 老博士', text: '交错长街……当年撤离的队伍，就是在这段断的。' },
+        { who: '你', text: '这次不让它们过去。' }
+      ],
+      10: [
+        { who: '周维山 · 老博士', text: '终局回路。走到头就是收费站，天快亮了。' },
+        { who: '周维山 · 老博士', text: '灯还亮着，就还有人活着。' }
+      ]
+    },
+    clears: {
+      1: '第一段路守住了。老赵把落石区标了出来，前面还有九段。',
+      2: '双弯夹道清空了。老博士在记录本上写：尸群密度高于预期。',
+      3: '回形走廊，一只没漏。预算攒下来了，后面的硬仗用得上。',
+      4: '巨尸倒在了坡底。老博士第一次抬头看了你一会儿，没说话。',
+      5: '折返长坡守住了，后半段那几格塔位摆得很值。',
+      6: '双桥没破。尸群挤在桥口，一层层被水炮压回去。',
+      7: '落石砸坏了塔，老赵连夜修好。这一段，山比尸群更难缠。',
+      8: '密道清空。老博士说，这条路上第一次听见有人笑。',
+      9: '交错长街，通了。三年前没走完的那条路，这次走完了。',
+      10: '终局回路清空。收费站的灯还亮着。'
+    },
+    fail: '它们冲进去了……收拾一下，重来。别让灯灭。',
+    ending: [
+      { who: '周维山 · 老博士', text: '天亮了。山上的石头还在滚，路却通了。' },
+      { who: '周维山 · 老博士', text: '把灯留着。下一个路过的人，会知道这里还能走。' },
+      { who: '你', text: '灯不会灭。' }
+    ]
+  };
+
+  var storyEl = document.getElementById('story');
+  var storyWho = document.getElementById('storyWho');
+  var storyText = document.getElementById('storyText');
+  var storyIndex = document.getElementById('storyIndex');
+  var btnStoryNext = document.getElementById('btnStoryNext');
+  var btnStorySkip = document.getElementById('btnStorySkip');
+  var storyCard = document.getElementById('storyCard');
+  var portraitCv = document.getElementById('portrait');
+
+  /* 本次会话里已经播过的关卡，重开不再重复 */
+  var storySeen = {};
+  var storyQueue = [];
+  var storyAt = 0;
+  var storyOpen = false;
+  var storyDone = null;
+  var storyTimer = null;
+  var storyFull = '';
+  var storyReturn = 'playing';
+
+  function storyNodes(no) {
+    var base = no === 1 ? STORY.prologue : [];
+    var own = STORY.levels[no] || [];
+    return base.concat(own);
+  }
+
+  function openStory(lines, onDone) {
+    if (!lines || !lines.length) {
+      if (onDone) onDone();
+      return;
+    }
+    storyQueue = lines;
+    storyAt = 0;
+    storyDone = onDone || null;
+    storyOpen = true;
+    stopLoop();
+    storyReturn = state.mode === 'story' ? 'playing' : state.mode;
+    state.mode = 'story';
+    storyEl.hidden = false;
+    if (portraitCv && !portraitCv.getAttribute('data-drawn')) {
+      drawProfessor(portraitCv);
+      portraitCv.setAttribute('data-drawn', '1');
+    }
+    showStoryLine();
+    syncHud();
+  }
+
+  function showStoryLine() {
+    var node = storyQueue[storyAt];
+    if (!node) { closeStory(); return; }
+    storyWho.textContent = node.who;
+    storyIndex.textContent = (storyAt + 1) + ' / ' + storyQueue.length;
+    storyFull = node.text;
+    storyText.textContent = '';
+    if (storyTimer) { window.clearInterval(storyTimer); storyTimer = null; }
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      storyText.textContent = storyFull;
+    } else {
+      storyText.textContent = storyFull.charAt(0);
+      var shown = 1;
+      storyTimer = window.setInterval(function () {
+        shown += 2;
+        storyText.textContent = storyFull.slice(0, shown);
+        if (shown >= storyFull.length) {
+          window.clearInterval(storyTimer);
+          storyTimer = null;
+        }
+      }, 46);
+    }
+    btnStoryNext.textContent = storyAt === storyQueue.length - 1 ? '进入路段 ▸' : '继续 ▸';
+  }
+
+  function advanceStory() {
+    if (!storyOpen) return;
+    if (storyTimer) {
+      /* 打字中途点一下先把整句显示完，再点才翻页 */
+      window.clearInterval(storyTimer);
+      storyTimer = null;
+      storyText.textContent = storyFull;
+      return;
+    }
+    storyAt += 1;
+    if (storyAt >= storyQueue.length) { closeStory(); return; }
+    showStoryLine();
+  }
+
+  function closeStory() {
+    if (!storyOpen) return;
+    if (storyTimer) { window.clearInterval(storyTimer); storyTimer = null; }
+    storyOpen = false;
+    storyEl.hidden = true;
+    state.mode = storyReturn;
+    var cb = storyDone;
+    storyDone = null;
+    syncHud();
+    render();
+    if (cb) cb();
+  }
+
+  btnStoryNext.addEventListener('click', advanceStory);
+  btnStorySkip.addEventListener('click', closeStory);
+  storyCard.addEventListener('click', function (ev) {
+    if (ev.target.closest('button')) return;
+    advanceStory();
+  });
+
+  /* 手绘老博士立绘：白发、护目镜、旧白大褂和一支手电 */
+  function drawProfessor(cv) {
+    var c = cv.getContext('2d');
+    var sx = cv.width / 132, sy = cv.height / 160;
+    c.setTransform(sx, 0, 0, sy, 0, 0);
+    c.clearRect(0, 0, 132, 160);
+
+    var g = c.createLinearGradient(0, 0, 0, 160);
+    g.addColorStop(0, '#2f343b');
+    g.addColorStop(1, '#15171a');
+    c.fillStyle = g;
+    c.fillRect(0, 0, 132, 160);
+
+    /* 背景浮尘 */
+    c.fillStyle = 'rgba(233,163,56,0.16)';
+    for (var i = 0; i < 34; i++) {
+      var dx = 8 + Math.random() * 116, dy = 10 + Math.random() * 140;
+      c.fillRect(dx, dy, 1.2, 1.2);
+    }
+
+    var halo = c.createRadialGradient(66, 60, 10, 66, 60, 62);
+    halo.addColorStop(0, 'rgba(233,163,56,0.09)');
+    halo.addColorStop(1, 'rgba(233,163,56,0)');
+    c.fillStyle = halo;
+    c.fillRect(0, 0, 132, 160);
+
+    /* 白大褂 */
+    c.fillStyle = '#dedad0';
+    c.beginPath();
+    c.moveTo(14, 160);
+    c.quadraticCurveTo(18, 118, 52, 104);
+    c.lineTo(80, 104);
+    c.quadraticCurveTo(114, 118, 118, 160);
+    c.closePath();
+    c.fill();
+    c.fillStyle = '#c8c3b6';
+    c.beginPath();
+    c.moveTo(52, 104);
+    c.lineTo(66, 126);
+    c.lineTo(80, 104);
+    c.lineTo(74, 100);
+    c.lineTo(66, 114);
+    c.lineTo(58, 100);
+    c.closePath();
+    c.fill();
+
+    /* 脖子与头 */
+    c.fillStyle = '#b9a186';
+    c.fillRect(58, 92, 16, 16);
+    c.fillStyle = '#d2b998';
+    c.beginPath();
+    c.ellipse(66, 70, 25, 29, 0, 0, Math.PI * 2);
+    c.fill();
+
+    /* 两侧鬓角：只留两撮贴着头皮的灰发，别糊住脸颊 */
+    c.fillStyle = 'rgba(206,201,186,0.92)';
+    c.beginPath();
+    c.ellipse(43.5, 64, 3.2, 10, 0.12, 0, Math.PI * 2);
+    c.fill();
+    c.beginPath();
+    c.ellipse(88.5, 64, 3.2, 10, -0.12, 0, Math.PI * 2);
+    c.fill();
+
+    /* 下半脸的胡茬：贴着下颌一层灰影 + 几点短须 */
+    c.fillStyle = 'rgba(168,162,148,0.38)';
+    c.beginPath();
+    c.moveTo(48, 86);
+    c.quadraticCurveTo(66, 104, 84, 86);
+    c.quadraticCurveTo(66, 98, 48, 86);
+    c.fill();
+    c.fillStyle = 'rgba(120,112,98,0.45)';
+    for (var sb = 0; sb < 26; sb++) {
+      var bx = 50 + Math.random() * 32;
+      var by = 92 + Math.random() * 12;
+      c.fillRect(bx, by, 1, 1.6);
+    }
+
+    /* 嘴：一条短唇线 + 下唇阴影，不再用大色块盖住 */
+    c.strokeStyle = 'rgba(96,64,52,0.75)';
+    c.lineWidth = 1.4;
+    c.beginPath();
+    c.moveTo(61.5, 96.5);
+    c.quadraticCurveTo(66, 98.5, 70.5, 96.5);
+    c.stroke();
+    c.fillStyle = 'rgba(150,112,92,0.35)';
+    c.beginPath();
+    c.ellipse(66, 100.5, 4, 1.6, 0, 0, Math.PI * 2);
+    c.fill();
+
+    /* 护目镜 */
+    c.strokeStyle = '#3a3f47';
+    c.lineWidth = 2;
+    c.fillStyle = 'rgba(120,150,150,0.35)';
+    c.beginPath(); c.arc(56, 66, 8, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.beginPath(); c.arc(78, 66, 8, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.beginPath(); c.moveTo(64, 66); c.lineTo(70, 66); c.stroke();
+    /* 白眉与鼻梁 */
+    c.strokeStyle = '#eae6dc';
+    c.lineWidth = 2.2;
+    c.beginPath();
+    c.moveTo(49, 56); c.lineTo(60, 54);
+    c.moveTo(72, 54); c.lineTo(83, 56);
+    c.stroke();
+    c.strokeStyle = 'rgba(140,110,85,0.5)';
+    c.lineWidth = 1;
+    c.beginPath();
+    c.moveTo(66, 68); c.lineTo(63, 79); c.lineTo(69, 80);
+    c.stroke();
+
+    c.fillStyle = '#20242a';
+    c.beginPath(); c.arc(56, 67, 2, 0, Math.PI * 2); c.fill();
+    c.beginPath(); c.arc(78, 67, 2, 0, Math.PI * 2); c.fill();
+
+    /* 皱纹与鼻梁 */
+    c.strokeStyle = 'rgba(120,95,72,0.5)';
+    c.lineWidth = 1;
+    c.beginPath(); c.moveTo(44, 52); c.lineTo(54, 54); c.stroke();
+    c.beginPath(); c.moveTo(78, 54); c.lineTo(88, 52); c.stroke();
+    c.beginPath(); c.moveTo(66, 70); c.lineTo(62, 80); c.stroke();
+    c.beginPath(); c.moveTo(52, 88); c.lineTo(60, 88); c.stroke();
+    c.beginPath(); c.moveTo(72, 88); c.lineTo(80, 88); c.stroke();
+
+    /* 手电筒：短筒铁皮身 + 亮着的灯头，光锥朝右上避开脸 */
+
+    c.fillStyle = '#2a2e35';
+    c.fillRect(103, 100, 9, 26);
+    c.fillStyle = '#4a5058';
+    c.fillRect(101, 93, 13, 8);
+    c.fillStyle = '#ffe9b0';
+    c.fillRect(104, 91, 7, 3);
+    c.fillStyle = '#e9a338';
+    c.fillRect(103, 110, 9, 2);
+
+    /* 大褂上的旧编号 */
+    c.fillStyle = 'rgba(60,66,74,0.55)';
+    c.font = '7px "IBM Plex Mono", monospace';
+    c.fillText('S-217', 20, 148);
+  }
+
+  /* =========================================================
+     远山与落石
+     ========================================================= */
+
+  /* 画进静态底图，不参与每帧重绘 */
+  function drawMountain(c) {
+    var base = 124;
+
+    var g = c.createLinearGradient(0, 0, 0, base);
+    g.addColorStop(0, '#7c8285');
+    g.addColorStop(0.62, '#9a9b92');
+    g.addColorStop(1, '#b7b0a0');
+
+    var ridgePts = [[58, 24], [108, 48], [168, 6], [232, 52], [300, 26], [372, 60], [446, 30], [534, 62], [626, 28], [716, 58], [812, 36], [902, 52], [980, 44]];
+    function ridgePath() {
+      c.beginPath();
+      c.moveTo(-30, base);
+      c.lineTo(-30, 54);
+      for (var p = 0; p < ridgePts.length; p++) c.lineTo(ridgePts[p][0], ridgePts[p][1]);
+      c.lineTo(980, base);
+      c.closePath();
+    }
+
+    /* 背脊：更远的一层山，只给一层浅色剪影，拉开纵深 */
+    var backPts = [[-20, 52], [64, 22], [128, 46], [214, 14], [296, 42], [392, 20], [488, 46], [584, 24], [676, 48], [772, 26], [858, 50], [940, 32], [1000, 46]];
+    c.save();
+    c.globalAlpha = 0.6;
+    var bg = c.createLinearGradient(0, 0, 0, base);
+    bg.addColorStop(0, '#b6b7ac');
+    bg.addColorStop(1, '#cfc9b6');
+    c.fillStyle = bg;
+    c.beginPath();
+    c.moveTo(-40, base);
+    c.lineTo(-40, 56);
+    for (var bp = 0; bp < backPts.length; bp++) c.lineTo(backPts[bp][0], backPts[bp][1]);
+    c.lineTo(1000, base);
+    c.closePath();
+    c.fill();
+    c.restore();
+
+    c.save();
+    c.globalAlpha = 0.85;
+    c.fillStyle = g;
+    ridgePath();
+    c.fill();
+
+    /* 山脊内侧的暗边：把整座山往右下错开一层，再用山体裁剪，只留轮廓边 */
+    c.save();
+    ridgePath();
+    c.clip();
+    c.translate(10, 12);
+    ridgePath();
+    c.fillStyle = 'rgba(56,62,66,0.13)';
+    c.fill();
+    c.restore();
+
+    /* 山脊描边与岩层：让远山不至于像一块灰纸板 */
+    c.strokeStyle = 'rgba(66,72,74,0.35)';
+    c.lineWidth = 1.2;
+    c.beginPath();
+    c.moveTo(-30, 54);
+    for (var q = 0; q < ridgePts.length; q++) c.lineTo(ridgePts[q][0], ridgePts[q][1]);
+    c.stroke();
+
+    c.strokeStyle = 'rgba(70,74,70,0.16)';
+    c.lineWidth = 1;
+    for (var s = 0; s < 90; s++) {
+      var sx = Math.random() * W;
+      var sy = 18 + Math.random() * 96;
+      c.beginPath();
+      c.moveTo(sx, sy);
+      c.lineTo(sx + 2, sy + 6 + Math.random() * 10);
+      c.stroke();
+    }
+
+    /* 山脚的针叶林剪影，给远山一个尺度参照 */
+    c.fillStyle = 'rgba(54,62,56,0.40)';
+    for (var t2 = 0; t2 < 26; t2++) {
+      var px2 = 20 + Math.random() * 930;
+      var py2 = base - 14 + Math.random() * 10;
+      var th = 9 + Math.random() * 9;
+      c.beginPath();
+      c.moveTo(px2, py2 - th);
+      c.lineTo(px2 + th * 0.34, py2);
+      c.lineTo(px2 - th * 0.34, py2);
+      c.closePath();
+      c.fill();
+    }
+
+    /* 山体裂缝 */
+    c.strokeStyle = 'rgba(60,64,66,0.22)';
+    c.lineWidth = 1;
+    for (var i = 0; i < 16; i++) {
+      var mx = 20 + Math.random() * 940;
+      var my = 26 + Math.random() * 74;
+      c.beginPath();
+      c.moveTo(mx, my);
+      c.lineTo(mx + 4 + Math.random() * 5, my + 10 + Math.random() * 14);
+      c.stroke();
+    }
+
+    /* 塌方缺口：贴着山体内部画一道浅色滑坡，石头就是从这里滚下去的 */
+    c.save();
+    ridgePath();
+    c.clip();
+    c.fillStyle = 'rgba(86,82,74,0.22)';
+    c.beginPath();
+    c.moveTo(176, 14);
+    c.lineTo(190, 38);
+    c.lineTo(184, 68);
+    c.lineTo(174, 88);
+    c.lineTo(164, 62);
+    c.lineTo(164, 34);
+    c.closePath();
+    c.fill();
+    c.strokeStyle = 'rgba(58,54,50,0.28)';
+    c.lineWidth = 1;
+    for (var cr = 0; cr < 5; cr++) {
+      c.beginPath();
+      c.moveTo(170 + Math.random() * 16, 24 + Math.random() * 30);
+      c.lineTo(178 + Math.random() * 14, 46 + Math.random() * 30);
+      c.stroke();
+    }
+    c.restore();
+    c.fillStyle = 'rgba(120,110,96,0.5)';
+    for (var k = 0; k < 22; k++) {
+      var rx = 150 + Math.random() * 34;
+      var ry = 20 + Math.random() * 78;
+      c.fillRect(rx, ry, 1.5 + Math.random() * 2, 1.5 + Math.random() * 2);
+    }
+
+    c.globalAlpha = 1;
+
+    /* 山脚雾化：上下都淡出，不留下一条硬边 */
+    var haze = c.createLinearGradient(0, base - 46, 0, base + 20);
+    haze.addColorStop(0, 'rgba(205,198,176,0)');
+    haze.addColorStop(0.55, 'rgba(205,198,176,0.82)');
+    haze.addColorStop(1, 'rgba(205,198,176,0)');
+    c.fillStyle = haze;
+    c.fillRect(0, base - 46, W, 66);
+    c.restore();
+  }
+
+  function rockGap() {
+    return ROCK_GAP[LV.no] || 0;
+  }
+
+  function spawnRock() {
+    var tower = null;
+    var safe = LV.no === 1;
+    if (!safe && state.towers.length && Math.random() < 0.62) {
+      var pick = -1, seen = 0;
+      for (var i = 0; i < state.towers.length; i++) {
+        if (state.towers[i].broken) continue;
+        seen += 1;
+        if (Math.random() < 1 / seen) pick = i;
+      }
+      if (pick >= 0) tower = state.towers[pick];
+    }
+    var tx, ty;
+    if (tower) {
+      tx = tower.x;
+      ty = tower.y;
+    } else {
+      var d = Math.random() * TOTAL_LEN;
+      var p = posAt(d);
+      tx = p.x + (Math.random() - 0.5) * 16;
+      ty = p.y + (Math.random() - 0.5) * 16;
+    }
+    state.rocks.push({
+      x0: 48 + Math.random() * 150,
+      y0: 16 + Math.random() * 14,
+      x1: tx,
+      y1: ty,
+      t: 0,
+      dur: 1.1 + Math.random() * 0.3,
+      size: 6.5 + Math.random() * 4,
+      spin: (Math.random() < 0.5 ? -1 : 1) * (2.2 + Math.random() * 2),
+      rot: Math.random() * 6.28,
+      tower: tower,
+      safe: safe && !tower,
+      dead: false
+    });
+    state.rockAt = rockGap() * (0.85 + Math.random() * 0.35);
+    sfx.rock();
+  }
+
+  function updateRocks(dt) {
+    if (state.shake > 0) state.shake = Math.max(0, state.shake - dt);
+    var gap = rockGap();
+    if (gap > 0) {
+      if (!state.rockAt) state.rockAt = gap * (LV.no === 1 ? 0.9 : 0.62);
+      state.rockAt -= dt;
+      if (state.rockAt <= 0) spawnRock();
+    }
+    for (var i = 0; i < state.rocks.length; i++) {
+      var r = state.rocks[i];
+      r.t += dt / r.dur;
+      if (r.t >= 1) {
+        r.t = 1;
+        r.dead = true;
+        rockImpact(r);
+      }
+    }
+    compactDead(state.rocks);
+  }
+
+  function rockImpact(r) {
+    state.shake = 0.42;
+    burst(r.x1, r.y1, 12, '150,138,118');
+    state.effects.push({
+      x: r.x1, y: r.y1, r: 5, maxR: 34, life: 0.42, max: 0.42, color: '150,134,108'
+    });
+    state.effects.push({
+      x: r.x1, y: r.y1, r: 2, maxR: 16, life: 0.5, max: 0.5, color: '212,84,44'
+    });
+    sfx.crack();
+    if (r.tower && !r.tower.broken) {
+      r.tower.broken = true;
+      r.tower.flash = 0.2;
+      toast('落石砸坏了' + TOWER_SPECS[r.tower.type].label + ' · 花 ' + REPAIR_COST + ' 请老赵抢修');
+      if (state.inspect === r.tower) syncHud();
+    } else if (!r.safe) {
+      toast('落石砸在路面上 · 塔没事，路肩留了个坑');
+    }
+  }
+
+  function drawRocks() {
+    for (var i = 0; i < state.rocks.length; i++) {
+      var r = state.rocks[i];
+      var p = Math.min(1, r.t);
+      var bx = r.x0 + (r.x1 - r.x0) * p;
+      var by = r.y0 + (r.y1 - r.y0) * p - Math.sin(p * Math.PI) * 52;
+
+      /* 地面投影随高度变大，给落点一个提前量 */
+      ctx.save();
+      ctx.globalAlpha = 0.16 + p * 0.26;
+      ctx.fillStyle = '#20242a';
+      ctx.beginPath();
+      ctx.ellipse(r.x1, r.y1 + 5, r.size * (0.7 + p * 0.4), r.size * (0.45 + p * 0.28), 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      /* 飞行拖尾 */
+      ctx.save();
+      ctx.globalAlpha = 0.22;
+      ctx.fillStyle = '#8c8677';
+      for (var k = 1; k <= 3; k++) {
+        var q = Math.max(0, p - k * 0.045);
+        var tx = r.x0 + (r.x1 - r.x0) * q;
+        var ty = r.y0 + (r.y1 - r.y0) * q - Math.sin(q * Math.PI) * 52;
+        ctx.beginPath();
+        ctx.arc(tx, ty, r.size * (0.55 - k * 0.1), 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      ctx.save();
+      ctx.translate(bx, by);
+      ctx.rotate(r.rot + r.spin * p);
+      var rad = r.size * (0.85 + p * 0.22);
+      ctx.fillStyle = '#767061';
+      ctx.beginPath();
+      for (var v = 0; v < 7; v++) {
+        var ang = v / 7 * Math.PI * 2;
+        var rr = rad * (0.78 + (v % 2 ? 0.24 : 0));
+        var px = Math.cos(ang) * rr;
+        var py = Math.sin(ang) * rr * 0.86;
+        if (v === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(38,42,46,0.45)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(233,163,56,0.28)';
+      ctx.fillRect(-rad * 0.3, -rad * 0.4, rad * 0.35, rad * 0.3);
+      ctx.restore();
+    }
+  }
+
+  /* =========================================================
+     抢修
+     ========================================================= */
+
+  function repairTower(t) {
+    if (!t || !t.broken) return;
+    if (state.money < REPAIR_COST) {
+      toast('预算不够 · 抢修要 ' + REPAIR_COST);
+      sfx.deny();
+      return;
+    }
+    state.money -= REPAIR_COST;
+    t.broken = false;
+    t.cool = 0.2;
+    t.flash = 0.12;
+    toast('老赵上山把塔修好了 · 预算 -' + REPAIR_COST);
+    sfx.build();
+    syncHud();
+  }
+
+  /* =========================================================
+     第一关分步引导
+     ========================================================= */
+
+  var coachEl = document.getElementById('coach');
+  var coachStepEl = document.getElementById('coachStep');
+  var coachTextEl = document.getElementById('coachText');
+  var coachHintEl = document.getElementById('coachHint');
+
+  function countTowers(type) {
+    var n = 0;
+    for (var i = 0; i < state.towers.length; i++) {
+      if (state.towers[i].type === type) n += 1;
+    }
+    return n;
+  }
+
+  var TUTOR_STEPS = [
+    {
+      tip: '老博士：先架一盏警示灯塔。左键点一处空路肩，悬停能先看落点和射程。',
+      hint: '1 键 = 警示灯塔 · 60 预算',
+      check: function () { return countTowers(1) >= 1; }
+    },
+    {
+      tip: '老博士：水炮桩能溅射减速。按 2 换塔，摆在弯道内侧，一下罩住两段路。',
+      hint: '2 键 = 水炮桩 · 110 预算',
+      check: function () { return countTowers(2) >= 1; }
+    },
+    {
+      tip: '老博士：放第一波进来。游尸慢，爬尸耐打，水炮先减速，灯塔补伤害。',
+      hint: '点「立即开波」或等倒计时',
+      check: function () { return state.wave >= 1; }
+    },
+    {
+      tip: '老博士：位置不理想就右键拆了重摆，回收七成预算。塔被落石砸坏，还能花 25 抢修。',
+      hint: '拆塔回收 · 抢修 25 · ESC 暂停',
+      check: function () { return state.soldTowers >= 1; },
+      timeout: 18
+    }
+  ];
+
+  var tutorialDone = false;
+
+  function showCoach() {
+    var step = TUTOR_STEPS[state.tutStep];
+    if (!step) { endTutor(); return; }
+    coachEl.hidden = false;
+    coachStepEl.textContent = '引导 ' + (state.tutStep + 1) + ' / ' + TUTOR_STEPS.length;
+    coachTextEl.textContent = step.tip;
+    coachHintEl.textContent = step.hint || '';
+  }
+
+  function endTutor() {
+    state.tutor = false;
+    tutorialDone = true;
+    coachEl.hidden = true;
+    state.cue = [];
+    el.btnWave.classList.remove('is-cue');
+  }
+
+  function updateTutor(dt) {
+    if (!state.tutor) return;
+    state.tutT += dt;
+    var guard = 0;
+    while (state.tutor && guard++ < 5) {
+      var step = TUTOR_STEPS[state.tutStep];
+      if (!step) { endTutor(); return; }
+      var ok = step.check();
+      if (!ok && step.timeout && state.tutT > step.timeout) ok = true;
+      if (!ok) break;
+      state.tutStep += 1;
+      state.tutT = 0;
+      if (!TUTOR_STEPS[state.tutStep]) {
+        endTutor();
+        toast('引导结束 · 后面靠你自己判断');
+        return;
+      }
+      showCoach();
+      buildCue();
+      el.btnWave.classList.toggle('is-cue', state.tutStep === 2);
+      if (state.tutStep === 1) toast('记得按 2 换水炮桩');
+    }
+  }
+
+  /* 找出能同时罩住最多车道、又空着的格子，给新手点出三个建议位 */
+  function buildCue() {
+    state.cue = [];
+    if (!state.tutor || state.tutStep > 1) return;
+    var range = TOWER_SPECS[state.tutStep === 0 ? 1 : 2].range;
+    var list = [];
+    for (var r = 0; r < ROWS; r++) {
+      for (var c = 0; c < COLS; c++) {
+        if (!isFreeCell(c, r)) continue;
+        var cx = (c + 0.5) * CELL, cy = (r + 0.5) * CELL;
+        var score = 0;
+        for (var d = 0; d < TOTAL_LEN; d += CELL) {
+          var p = posAt(d);
+          var dx = p.x - cx, dy = p.y - cy;
+          if (dx * dx + dy * dy <= range * range) score += 1;
+        }
+        list.push({ c: c, r: r, score: score });
+      }
+    }
+    list.sort(function (a, b) { return b.score - a.score; });
+    state.cue = list.slice(0, 3);
+  }
+
+  function drawTutorCue() {
+    if (!state.tutor || !state.cue.length) return;
+    var pulse = 0.5 + Math.sin(state.time * 3.2) * 0.5;
+    for (var i = 0; i < state.cue.length; i++) {
+      var q = state.cue[i];
+      var cx = (q.c + 0.5) * CELL, cy = (q.r + 0.5) * CELL;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(233,163,56,' + (0.35 + pulse * 0.45) + ')';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]);
+      ctx.strokeRect(cx - 18, cy - 18, 36, 36);
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(233,163,56,' + (0.10 + pulse * 0.10) + ')';
+      ctx.fillRect(cx - 20, cy - 20, 40, 40);
+      ctx.fillStyle = 'rgba(32,36,42,' + (0.5 + pulse * 0.3) + ')';
+      ctx.font = '700 9px "IBM Plex Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(i + 1), cx, cy);
+      ctx.restore();
+    }
   }
 
   /* =========================================================
@@ -2734,6 +3901,16 @@ canvas#board {
 
   window.addEventListener('keydown', function (ev) {
     ensureAudio();
+    /* 剧情简报打开时，键盘只用来翻页或跳过 */
+    if (storyOpen) {
+      if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'n' || ev.key === 'N') {
+        ev.preventDefault();
+        advanceStory();
+      } else if (ev.key === 'Escape') {
+        closeStory();
+      }
+      return;
+    }
     if (ev.key === '1') {
       setSelected(1);
     } else if (ev.key === '2') {
@@ -2789,6 +3966,14 @@ canvas#board {
     if (state.mode !== 'playing' || !state.inspect) return;
     if (state.towers.indexOf(state.inspect) === -1) return;
     sellTower(state.inspect);
+    drawCurrentFrame();
+  });
+
+  /* 被落石砸坏的塔：花 25 预算请老赵抢修 */
+  el.btnRepair.addEventListener('click', function () {
+    if (state.mode !== 'playing' || !state.inspect) return;
+    if (state.towers.indexOf(state.inspect) === -1) return;
+    repairTower(state.inspect);
     drawCurrentFrame();
   });
 
